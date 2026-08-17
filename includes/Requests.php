@@ -213,6 +213,16 @@ class SNW_Requests {
         if ( $page_id ) {
             $page = get_post( $page_id );
             if ( $page && 'trash' !== $page->post_status ) {
+                // When a new slug was requested, move the existing page to it
+                // so "erstellen/aktualisieren" actually renames the page.
+                if ( $slug && $page->post_name !== $stored_slug ) {
+                    wp_update_post(
+                        array(
+                            'ID'        => $page_id,
+                            'post_name' => $stored_slug,
+                        )
+                    );
+                }
                 return array(
                     'id'  => $page_id,
                     'url' => get_permalink( $page_id ),

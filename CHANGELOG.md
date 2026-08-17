@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Bugfixes:**
+
+* „Seite erstellen/aktualisieren" benennt die vorhandene Erstellseite jetzt korrekt um, wenn die Adresse geändert wird (zuvor wurde eine Slug-Änderung ignoriert, solange die Seite bereits existierte).
+
 ## 1.3.0
 
 **Neue Funktion: Partner-Widgets & Site-Code**
