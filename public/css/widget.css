@@ -1,0 +1,284 @@
+/*
+ * Steigerwald-News Widget — public base styles.
+ * This is the canonical stylesheet; the public widget.js injects an identical
+ * copy when this file is not already present, so external partners only need
+ * to include the single <script> tag.
+ * All selectors are scoped under .steigerwald-news-widget to avoid touching
+ * the host page. No global h2/a/img/body rules.
+ */
+
+.steigerwald-news-widget {
+    --snw-accent: #c59a20;
+    --snw-bg: transparent;
+    --snw-text: inherit;
+    --snw-muted: color-mix(in srgb, currentColor 60%, transparent);
+    --snw-border: rgba(0, 0, 0, .14);
+    --snw-link: var(--snw-accent);
+    --snw-radius: 8px;
+    --snw-gap: 16px;
+    --snw-pad: 14px;
+    --snw-font: inherit;
+    box-sizing: border-box;
+    color: var(--snw-text);
+    font-family: var(--snw-font);
+    width: 100%;
+    container-type: inline-size;
+    line-height: 1.5;
+}
+
+.steigerwald-news-widget *,
+.steigerwald-news-widget *::before,
+.steigerwald-news-widget *::after {
+    box-sizing: border-box;
+}
+
+.steigerwald-news-widget .snw-root {
+    background: var(--snw-bg);
+    color: var(--snw-text);
+    padding: var(--snw-pad);
+    border-radius: var(--snw-radius);
+}
+
+.steigerwald-news-widget .snw-heading {
+    margin: 0 0 14px;
+    padding: 0 0 8px;
+    border-bottom: 2px solid var(--snw-accent);
+    color: inherit;
+    font: inherit;
+    font-size: 1.25em;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.steigerwald-news-widget .snw-list {
+    display: grid;
+    gap: var(--snw-gap);
+}
+
+.steigerwald-news-widget .snw-list--headlines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.steigerwald-news-widget .snw-item {
+    border-bottom: 1px solid var(--snw-border);
+    padding-bottom: var(--snw-gap);
+}
+
+.steigerwald-news-widget .snw-list--headlines .snw-item {
+    border: 0;
+    padding: 0;
+    margin: 0 0 10px;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.steigerwald-news-widget .snw-list--headlines .snw-item::before {
+    content: "\2022";
+    margin-right: 8px;
+    color: var(--snw-accent);
+}
+
+.steigerwald-news-widget .snw-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.steigerwald-news-widget[data-layout="list"] .snw-item {
+    display: grid;
+    grid-template-columns: minmax(96px, 150px) 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.steigerwald-news-widget .snw-image-link {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: rgba(127, 127, 127, .08);
+    border-radius: var(--snw-radius);
+}
+
+.steigerwald-news-widget .snw-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.steigerwald-news-widget .snw-content {
+    min-width: 0;
+}
+
+.steigerwald-news-widget .snw-meta {
+    margin: 0 0 5px;
+    color: var(--snw-muted);
+    font-size: .82em;
+}
+
+.steigerwald-news-widget .snw-cat {
+    margin: 0 0 4px;
+    color: var(--snw-muted);
+    font-size: .8em;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.steigerwald-news-widget .snw-cat-link {
+    color: var(--snw-muted);
+    text-decoration: none;
+}
+
+.steigerwald-news-widget .snw-cat-link:hover {
+    text-decoration: underline;
+}
+
+.steigerwald-news-widget .snw-title {
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    font-size: 1.02em;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.steigerwald-news-widget .snw-title a,
+.steigerwald-news-widget .snw-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.steigerwald-news-widget .snw-title a:hover,
+.steigerwald-news-widget .snw-title-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.steigerwald-news-widget .snw-excerpt {
+    margin: 7px 0 0;
+    line-height: 1.5;
+    font-size: .94em;
+    color: inherit;
+}
+
+.steigerwald-news-widget .snw-readmore {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: .9em;
+    font-weight: 700;
+    color: var(--snw-link);
+    text-decoration: none;
+}
+
+.steigerwald-news-widget .snw-readmore::after {
+    content: " \2192";
+}
+
+.steigerwald-news-widget .snw-readmore:hover {
+    text-decoration: underline;
+}
+
+.steigerwald-news-widget .snw-branding {
+    margin: var(--snw-gap) 0 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--snw-border);
+    color: var(--snw-muted);
+    font-size: .78em;
+}
+
+.steigerwald-news-widget .snw-branding-link {
+    color: var(--snw-muted);
+    text-decoration: none;
+}
+
+.steigerwald-news-widget .snw-branding-link:hover {
+    text-decoration: underline;
+}
+
+.steigerwald-news-widget .snw-state {
+    margin: 0;
+    padding: 10px 0;
+    color: var(--snw-muted);
+    font-size: .92em;
+}
+
+.steigerwald-news-widget[data-layout="cards"] .snw-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.steigerwald-news-widget[data-layout="cards"] .snw-item {
+    display: block;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--snw-border);
+    border-radius: var(--snw-radius);
+    background: var(--snw-bg);
+}
+
+.steigerwald-news-widget[data-layout="cards"] .snw-image-link {
+    border-radius: 0;
+    aspect-ratio: 16 / 10;
+}
+
+.steigerwald-news-widget[data-layout="cards"] .snw-content {
+    padding: 12px 13px 14px;
+}
+
+.steigerwald-news-widget[data-layout="compact"] .snw-image-link,
+.steigerwald-news-widget[data-layout="compact"] .snw-excerpt {
+    display: none !important;
+}
+
+.steigerwald-news-widget[data-layout="compact"] .snw-item {
+    display: block;
+}
+
+.steigerwald-news-widget .snw-item:focus-within,
+.steigerwald-news-widget a:focus-visible {
+    outline: 2px solid var(--snw-accent);
+    outline-offset: 2px;
+}
+
+@container (max-width: 520px) {
+    .steigerwald-news-widget[data-layout="list"] .snw-item {
+        grid-template-columns: 96px 1fr;
+        gap: 11px;
+    }
+
+    .steigerwald-news-widget[data-layout="cards"] .snw-list {
+        grid-template-columns: 1fr;
+    }
+
+    .steigerwald-news-widget .snw-excerpt {
+        display: none;
+    }
+}
+
+@container (max-width: 380px) {
+    .steigerwald-news-widget[data-layout="list"] .snw-item {
+        grid-template-columns: 1fr;
+    }
+
+    .steigerwald-news-widget[data-layout="list"] .snw-image-link {
+        aspect-ratio: 16 / 7;
+    }
+}
+
+@media (max-width: 520px) {
+    .steigerwald-news-widget[data-layout="list"] .snw-item {
+        grid-template-columns: 96px 1fr;
+        gap: 11px;
+    }
+
+    .steigerwald-news-widget[data-layout="cards"] .snw-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .steigerwald-news-widget {
+        --snw-border: rgba(255, 255, 255, .18);
+    }
+}

@@ -1,0 +1,279 @@
+/*
+ * Steigerwald-News Widget — admin builder styles.
+ * Integrates with the WordPress admin look & feel.
+ */
+.snw-wrap {
+    max-width: 1200px;
+}
+
+.snw-intro {
+    max-width: 720px;
+    color: #50575e;
+}
+
+.snw-builder {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+    .snw-builder {
+        grid-template-columns: 1fr;
+    }
+}
+
+.snw-builder__config {
+    display: grid;
+    gap: 16px;
+}
+
+.snw-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin: 0;
+}
+
+.snw-card h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 12px;
+    padding: 0;
+    color: #1d2327;
+}
+
+.snw-card label,
+.snw-card > label {
+    display: block;
+    font-weight: 600;
+    margin: 12px 0 4px;
+}
+
+.snw-card input[type="text"],
+.snw-card input[type="url"],
+.snw-card input[type="number"],
+.snw-card select {
+    width: 100%;
+    max-width: 420px;
+}
+
+.snw-card .description {
+    margin: 4px 0 0;
+    color: #646970;
+    font-size: 12px;
+}
+
+.snw-checkboxes {
+    border: 0;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.snw-checkboxes legend {
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+.snw-checkboxes label {
+    display: inline-block;
+    width: auto;
+    margin: 0 12px 6px 0;
+    font-weight: 400;
+}
+
+.snw-colors {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px 14px;
+    margin-top: 8px;
+}
+
+.snw-color {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.snw-color__input {
+    width: 60px !important;
+}
+
+.snw-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.snw-status {
+    font-size: 13px;
+    color: #007a3e;
+}
+
+/* Token / tag input */
+.snw-token {
+    position: relative;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 6px;
+    background: #fff;
+}
+
+.snw-token__input {
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+}
+
+.snw-token__list {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.snw-token__chip {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 12px;
+    padding: 2px 6px 2px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.snw-token__chip button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: #50575e;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.snw-token__results,
+.snw-results {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.snw-token__results li,
+.snw-results li {
+    padding: 6px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.snw-token__results li:hover,
+.snw-results li:hover {
+    background: #f6f7f7;
+}
+
+.snw-token__results small,
+.snw-results small {
+    color: #787c82;
+}
+
+.snw-selected {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+}
+
+.snw-sel-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    background: #fff;
+    border: 1px solid #c3c4c4;
+    border-radius: 4px;
+    cursor: grab;
+}
+
+.snw-sel-item:active {
+    cursor: grabbing;
+}
+
+.snw-sel-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.snw-sel-date {
+    color: #787c82;
+    font-size: 12px;
+}
+
+.snw-sel-up,
+.snw-sel-down,
+.snw-sel-rm {
+    border: 1px solid #c3c4c7;
+    background: #f6f7f7;
+    cursor: pointer;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+}
+
+/* Live preview */
+.snw-builder__preview {
+    position: sticky;
+    top: 32px;
+}
+
+.snw-preview-frame {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px;
+    min-height: 240px;
+}
+
+.snw-preset-table td,
+.snw-preset-table th {
+    vertical-align: middle;
+}
+
+.snw-preset-table .snw-preset-actions .button {
+    margin: 0 2px 4px 0;
+}
+
+.snw-advanced summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.snw-help {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px 18px;
+}
+
+.snw-help summary {
+    cursor: pointer;
+    font-weight: 600;
+}

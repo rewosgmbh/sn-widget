@@ -1,0 +1,292 @@
+# Copyright (C) 2026 Steigerwald-News
+# This file is distributed under the GPL-2.
+msgid ""
+msgstr ""
+"Project-Id-Version: Steigerwald-News Widget 1.1.0\n"
+"Report-Msgid-Bugs-To: https://example.com/\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: steigerwald-news-widget\n"
+
+msgid "Steigerwald-News Widget"
+msgstr ""
+
+msgid "News Widget"
+msgstr ""
+
+msgid "Keine Berechtigung."
+msgstr ""
+
+msgid "Erstellt extern einbettbare Nachrichten-Widgets aus deinen WordPress-Beiträgen. Das Widget nutzt ausschließlich die vorhandene WordPress-REST-API – es wird kein eigener Endpunkt registriert."
+msgstr ""
+
+msgid "Widget-Name"
+msgstr ""
+
+msgid "Interner Name zur Verwaltung gespeicherter Widgets. Erscheint nicht öffentlich."
+msgstr ""
+
+msgid "Inhalt"
+msgstr ""
+
+msgid "Inhaltsmodus"
+msgstr ""
+
+msgid "Neueste Beiträge"
+msgstr ""
+
+msgid "Kategorie"
+msgstr ""
+
+msgid "Schlagwörter"
+msgstr ""
+
+msgid "Kategorie + Schlagwörter"
+msgstr ""
+
+msgid "Einzelne Beiträge"
+msgstr ""
+
+msgid "Hybrid (Angeheftet + Automatisch)"
+msgstr ""
+
+msgid "Anzahl Beiträge"
+msgstr ""
+
+msgid "Sortierung"
+msgstr ""
+
+msgid "Neueste zuerst"
+msgstr ""
+
+msgid "Älteste zuerst"
+msgstr ""
+
+msgid "Manuelle Reihenfolge"
+msgstr ""
+
+msgid "Titel A–Z"
+msgstr ""
+
+msgid "Design"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "News Liste (Bild links)"
+msgstr ""
+
+msgid "Karten (Raster)"
+msgstr ""
+
+msgid "Kompakt (Sidebar)"
+msgstr ""
+
+msgid "Nur Überschriften"
+msgstr ""
+
+msgid "Sichtbare Elemente"
+msgstr ""
+
+msgid "Beitragsbild"
+msgstr ""
+
+msgid "Datum"
+msgstr ""
+
+msgid "Kategorie"
+msgstr ""
+
+msgid "Teaser"
+msgstr ""
+
+msgid "Weiterlesen-Link"
+msgstr ""
+
+msgid "Quellenhinweis"
+msgstr ""
+
+msgid "Teaser-Länge (Zeichen)"
+msgstr ""
+
+msgid "Farben"
+msgstr ""
+
+msgid "Akzentfarbe"
+msgstr ""
+
+msgid "Hintergrund"
+msgstr ""
+
+msgid "Textfarbe"
+msgstr ""
+
+msgid "Sekundäre Textfarbe"
+msgstr ""
+
+msgid "Rahmenfarbe"
+msgstr ""
+
+msgid "Linkfarbe"
+msgstr ""
+
+msgid "Eckenradius"
+msgstr ""
+
+msgid "Abstand"
+msgstr ""
+
+msgid "Kompakt"
+msgstr ""
+
+msgid "Normal"
+msgstr ""
+
+msgid "Großzügig"
+msgstr ""
+
+msgid "Schriftart"
+msgstr ""
+
+msgid "Host-Website übernehmen"
+msgstr ""
+
+msgid "System Sans"
+msgstr ""
+
+msgid "Serif"
+msgstr ""
+
+msgid "Partner & Tracking"
+msgstr ""
+
+msgid "Partnerkennung"
+msgstr ""
+
+msgid "Dient ausschließlich dem UTM-Tracking der Artikellinks (utm_source). Optional."
+msgstr ""
+
+msgid "Überschrift (optional)"
+msgstr ""
+
+msgid "Fehlerverhalten"
+msgstr ""
+
+msgid "Hinweis anzeigen"
+msgstr ""
+
+msgid "Widget ausblenden"
+msgstr ""
+
+msgid "Erweiterte Einstellungen"
+msgstr ""
+
+msgid "API-Basis (Quelle)"
+msgstr ""
+
+msgid "Quellname"
+msgstr ""
+
+msgid "Quell-URL"
+msgstr ""
+
+msgid "Widget-ID"
+msgstr ""
+
+msgid "Auszuschließende Beitrags-IDs"
+msgstr ""
+
+msgid "Rohkonfiguration (JSON)"
+msgstr ""
+
+msgid "Widget speichern"
+msgstr ""
+
+msgid "Einbettungscode kopieren"
+msgstr ""
+
+msgid "Zurücksetzen"
+msgstr ""
+
+msgid "Live-Vorschau"
+msgstr ""
+
+msgid "Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation."
+msgstr ""
+
+msgid "Gespeicherte Widgets"
+msgstr ""
+
+msgid "Presets speichern nur Konfiguration, keine Beiträge."
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Modus"
+msgstr ""
+
+msgid "Aktionen"
+msgstr ""
+
+msgid "Noch keine Widgets gespeichert."
+msgstr ""
+
+msgid "Bearbeiten"
+msgstr ""
+
+msgid "Duplizieren"
+msgstr ""
+
+msgid "Code kopieren"
+msgstr ""
+
+msgid "Löschen"
+msgstr ""
+
+msgid "Hilfe & Erklärung"
+msgstr ""
+
+msgid "Widget konfigurieren."
+msgstr ""
+
+msgid "Vorschau prüfen."
+msgstr ""
+
+msgid "Widget speichern."
+msgstr ""
+
+msgid "Einbettungscode kopieren."
+msgstr ""
+
+msgid "Code auf der Partnerseite einfügen."
+msgstr ""
+
+msgid "Die Partnerkennung wird als utm_source an die Artikellinks angehängt, damit du die Klicks aus dem eingebetteten Widget in deiner Statistik erkennen kannst. Sie erscheint nicht öffentlich als Text."
+msgstr ""
+
+msgid "Du wählst Kategorien und Schlagwörter bequem aus der Liste – Slugs musst du nicht kennen. Das Widget filtert die passenden Beiträge automatisch."
+msgstr ""
+
+msgid "Ein Preset ist deine gespeicherte Konfiguration im WordPress-Backend. Der Einbettungscode ist der HTML-Schnipsel, den du auf der Partnerseite einfügst. Ein Preset kannst du beliebig oft als Code exportieren."
+msgstr ""
+
+msgid "Unbenanntes Widget"
+msgstr ""
+
+msgid "(Kopie)"
+msgstr ""
+
+msgid "Keine Schlagwörter gefunden."
+msgstr ""
+
+msgid "Artikel suchen …"
+msgstr ""
+
+msgid "Schlagwort suchen …"
+msgstr ""
+
+msgid "Einstellungen"
+msgstr ""
