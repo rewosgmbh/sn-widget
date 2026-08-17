@@ -3,10 +3,10 @@
  * Plugin Name: Steigerwald-News Widget
  * Plugin URI:  https://steigerwald-news.example/
  * Description: Erstellt extern einbettbare Nachrichten-Widgets auf Basis der vorhandenen WordPress-REST-API. Kein eigener REST-Endpunkt, keine eigene Datenbanktabelle.
- * Version:     1.1.0
+ * Version:     1.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Tested up to:      6.6
+ * Tested up to:      6.7
  * Author:      Steigerwald-News
  * Author URI:  https://steigerwald-news.example/
  * License:     GPL-2
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SNW_VERSION', '1.1.0' );
+define( 'SNW_VERSION', '1.1.1' );
 define( 'SNW_FILE', __FILE__ );
 define( 'SNW_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNW_URL', plugin_dir_url( __FILE__ ) );

@@ -10,7 +10,9 @@ BUILD_ROOT="$(mktemp -d)"
 DEST="$BUILD_ROOT/$PLUGIN_DIR"
 mkdir -p "$DEST"
 
-cp -r admin includes languages public tests docs uninstall.php \
+# Release ZIP ships runtime code only. tests/ and docs/ are development
+# artifacts and are intentionally excluded.
+cp -r admin includes languages public uninstall.php \
       steigerwald-news-widget.php readme.txt README.md CHANGELOG.md "$DEST/"
 
 ZIP="$REPO/steigerwald-news-widget.zip"

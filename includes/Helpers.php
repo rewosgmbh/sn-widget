@@ -256,11 +256,11 @@ class SNW_Helpers {
      */
     public static function clamp_int( $value, $min, $max, $default ) {
         $int = absint( $value );
-        if ( $int <= 0 && $default > 0 ) {
-            return $default;
-        }
+        // A legitimate 0 (e.g. auto_count = 0 = "no automatic posts") must be
+        // preserved when 0 is within range. Only fall back to the default when
+        // the value is genuinely out of bounds below the minimum.
         if ( $int < $min ) {
-            return $min;
+            return ( $min > 0 ) ? $min : $default;
         }
         if ( $int > $max ) {
             return $max;

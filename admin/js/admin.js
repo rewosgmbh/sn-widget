@@ -80,8 +80,22 @@
             branding: $('#snw-show-branding').checked
         };
 
+        var mode = $('#snw-mode').value;
         var $cat = $('#snw-category');
-        var category = ($cat && $cat.value) ? [parseInt($cat.value, 10)] : [];
+
+        // Content modes are isolated: a value only leaves the builder when the
+        // active mode actually uses it. Hidden category/tag/post selections
+        // must never keep filtering in another mode.
+        var category = ((mode === 'category' || mode === 'category_tags') && $cat && $cat.value)
+            ? [parseInt($cat.value, 10)]
+            : [];
+        var tags = (mode === 'tags' || mode === 'category_tags')
+            ? state.tags.map(function (t) { return t.id; })
+            : [];
+        var include = (mode === 'manual') ? state.posts.map(function (p) { return p.id; }) : [];
+        var pinned = (mode === 'hybrid') ? state.pinned.map(function (p) { return p.id; }) : [];
+
+        var radiusVal = parseInt($('#snw-radius').value, 10);
 
         return {
             v: 1,
@@ -91,12 +105,12 @@
             widget_id: ($('#snw-widget-id').value || '').trim(),
             partner: ($('#snw-partner').value || '').trim(),
             title: ($('#snw-title').value || '').trim(),
-            mode: $('#snw-mode').value,
+            mode: mode,
             category: category,
-            tags: state.tags.map(function (t) { return t.id; }),
-            include: state.posts.map(function (p) { return p.id; }),
+            tags: tags,
+            include: include,
             exclude: parseIdList($('#snw-exclude').value),
-            pinned: state.pinned.map(function (p) { return p.id; }),
+            pinned: pinned,
             auto_count: clamp($('#snw-auto-count').value, 0, 20),
             limit: clamp($('#snw-limit').value, 1, 20),
             sort: $('#snw-sort').value,
@@ -110,7 +124,7 @@
                 muted: $('#snw-color-muted').value,
                 border: $('#snw-color-border').value,
                 link: $('#snw-color-link').value,
-                radius: parseInt($('#snw-radius').value, 10) || 8,
+                radius: (isNaN(radiusVal) ? 8 : radiusVal),
                 spacing: $('#snw-spacing').value,
                 typography: $('#snw-typography').value
             },
@@ -126,6 +140,7 @@
         $('#snw-title').value = cfg.title || '';
         $('#snw-mode').value = cfg.mode || 'latest';
         $('#snw-limit').value = cfg.limit || 5;
+        $('#snw-auto-count').value = (cfg.auto_count !== undefined && cfg.auto_count !== '') ? cfg.auto_count : 3;
         $('#snw-sort').value = cfg.sort || 'newest';
         $('#snw-layout').value = cfg.layout || 'list';
         $('#snw-teaser').value = cfg.teaser || 180;
@@ -162,18 +177,10 @@
         renderTagChips();
 
         state.posts = (cfg.include || []).map(function (id) { return { id: id, title: String(id), date: '' }; });
-        renderSelected('#snw-selected-posts', state.posts, function (id) {
-            state.posts = state.posts.filter(function (p) { return p.id !== id; });
-            renderSelected('#snw-selected-posts', state.posts);
-            updatePreview();
-        });
+        renderSelected('#snw-selected-posts', 'posts', makeRemove('posts'));
 
         state.pinned = (cfg.pinned || []).map(function (id) { return { id: id, title: String(id), date: '' }; });
-        renderSelected('#snw-pinned-list', state.pinned, function (id) {
-            state.pinned = state.pinned.filter(function (p) { return p.id !== id; });
-            renderSelected('#snw-pinned-list', state.pinned);
-            updatePreview();
-        }, true);
+        renderSelected('#snw-pinned-list', 'pinned', makeRemove('pinned'));
 
         if (window.jQuery && jQuery.fn.wpColorPicker) {
             $all('.snw-color__input').forEach(function (el) { jQuery(el).wpColorPicker('color', el.value); });
@@ -533,7 +540,9 @@
         $('#snw-source-url').value = L.sourceUrl;
 
         if (window.jQuery && jQuery.fn.wpColorPicker) {
-            $all('.snw-color__input').wpColorPicker({ width: 200 });
+            $all('.snw-color__input').forEach(function (el) {
+                jQuery(el).wpColorPicker({ width: 200 });
+            });
         }
 
         var debouncedPreview = debounce(updatePreview, 300);

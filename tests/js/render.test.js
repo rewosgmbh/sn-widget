@@ -220,6 +220,62 @@ console.log('Steigerwald-News Widget — render tests');
     });
 })();
 
+// --- Regression: data-layout must live on the OUTER widget element (P0) ---
+(function () {
+    setMock([]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ layout: 'cards' })).then(function () {
+        ok('data-layout set on outer widget element', el.getAttribute('data-layout') === 'cards');
+        var root = findByClass(el, 'snw-root')[0];
+        ok('inner root has no competing data-layout', !!root && root.getAttribute('data-layout') === null);
+    });
+})();
+
+// --- Regression: REST embeds BOTH media + terms and includes _links (P0) ---
+(function () {
+    var captured = null;
+    global.fetch = function (url) {
+        captured = url;
+        return Promise.resolve({ ok: true, json: function () { return Promise.resolve([]); } });
+    };
+    var el = makeEl();
+    return renderSync(el, baseConfig({
+        mode: 'category', category: [5],
+        show: { image: true, date: true, category: true, excerpt: true, readmore: true, branding: true }
+    })).then(function () {
+        var u = decodeURIComponent(captured);
+        ok('REST url includes _links in _fields', u.indexOf('_links') !== -1);
+        ok('REST url embeds both wp:term and wp:featuredmedia', u.indexOf('_embed=') !== -1 && u.indexOf('wp:featuredmedia') !== -1 && u.indexOf('wp:term') !== -1);
+        ok('category mode filters by categories', u.indexOf('categories=5') !== -1);
+    });
+})();
+
+// --- Regression: hidden taxonomy values must not leak across modes (P0) ---
+(function () {
+    var captured = null;
+    global.fetch = function (url) {
+        captured = url;
+        return Promise.resolve({ ok: true, json: function () { return Promise.resolve([]); } });
+    };
+    var el = makeEl();
+    return renderSync(el, baseConfig({ mode: 'latest', category: [5], tags: [7] })).then(function () {
+        var u = decodeURIComponent(captured);
+        ok('latest mode ignores category filter', u.indexOf('categories=') === -1);
+        ok('latest mode ignores tags filter', u.indexOf('tags=') === -1);
+    });
+})();
+
+// --- Regression: article links open in a new browser tab ---
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'Titel' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({})).then(function () {
+        var anchors = [];
+        walk(el, function (n) { return n.tagName === 'a'; }, anchors);
+        ok('links open in new tab (target=_blank)', anchors.length > 0 && anchors.every(function (a) { return a.target === '_blank'; }));
+    });
+})();
+
 setTimeout(function () {
     console.log('\n' + pass + ' assertions passed, ' + fail + ' failed.');
     process.exit(fail > 0 ? 1 : 0);

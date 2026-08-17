@@ -75,6 +75,9 @@ class SNW_Presets {
             foreach ( $presets as &$entry ) {
                 if ( (string) $entry['id'] === (string) $id ) {
                     $entry['name']      = $name;
+                    // Bind the widget id verbindlich to the preset id so the
+                    // tracked UTM links always reference the saved widget.
+                    $config['widget_id'] = $id;
                     $entry['config']    = $config;
                     $entry['updated']   = $now;
                     break;

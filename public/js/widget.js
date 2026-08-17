@@ -160,6 +160,7 @@
     function buildCacheKey(config) {
         return [
             config.api,
+            config.type || 'posts',
             config.mode,
             (config.category || []).join(','),
             (config.tags || []).join(','),
@@ -219,22 +220,30 @@
         });
     }
 
-    var FIELDS = 'id,date,link,title,excerpt,categories,tags,featured_media,_embedded';
+    // `_links` must be present for WordPress to populate `_embedded`.
+    var FIELDS = 'id,date,link,title,excerpt,categories,tags,featured_media,_links,_embedded';
 
     function buildAutoUrl(base, config, limit, exclude) {
-        var url = new URL(base.replace(/\/+$/, '') + '/posts');
+        var type = config.type || 'posts';
+        var url = new URL(base.replace(/\/+$/, '') + '/' + type);
         url.searchParams.set('per_page', String(Math.max(1, Math.min(20, limit || 5))));
         url.searchParams.set('status', 'publish');
         url.searchParams.set('_fields', FIELDS);
-        url.searchParams.set(
-            '_embed',
-            (config.show && config.show.category) ? 'wp:term' : 'wp:featuredmedia'
-        );
 
-        if (config.category && config.category.length) {
+        // Embed both media and terms whenever either is needed; requesting
+        // only one would drop the other from the rendered widget.
+        var embeds = [];
+        if (config.show && config.show.image) { embeds.push('wp:featuredmedia'); }
+        if (config.show && config.show.category) { embeds.push('wp:term'); }
+        url.searchParams.set('_embed', embeds.length ? embeds.join(',') : 'wp:featuredmedia');
+
+        // Only filter by taxonomy for modes that actually use it, so hidden
+        // category/tag values never leak across content modes.
+        var filterModes = { category: true, tags: true, 'category_tags': true, hybrid: true };
+        if (filterModes[config.mode] && config.category && config.category.length) {
             url.searchParams.set('categories', config.category.join(','));
         }
-        if (config.tags && config.tags.length) {
+        if (filterModes[config.mode] && config.tags && config.tags.length) {
             url.searchParams.set('tags', config.tags.join(','));
         }
         if (exclude && exclude.length) {
@@ -255,23 +264,21 @@
         return url.toString();
     }
 
-    function buildByIdUrl(base, ids) {
-        var url = new URL(base.replace(/\/+$/, '') + '/posts');
+    function buildByIdUrl(base, ids, type) {
+        var t = type || 'posts';
+        var url = new URL(base.replace(/\/+$/, '') + '/' + t);
         url.searchParams.set('include', '');
         url.searchParams.set('include', ids.join(','));
         url.searchParams.set('orderby', 'include');
         url.searchParams.set('status', 'publish');
         url.searchParams.set('_fields', FIELDS);
-        url.searchParams.set('_embed', 'wp:featuredmedia');
+        url.searchParams.set('_embed', 'wp:term,wp:featuredmedia');
         return url.toString();
     }
 
-    function fetchByIds(base, ids, controller, withCategories) {
+    function fetchByIds(base, ids, controller, withCategories, type) {
         if (!ids || !ids.length) { return Promise.resolve([]); }
-        var url = buildByIdUrl(base, ids);
-        if (withCategories) {
-            url = url.replace('_embed=wp:featuredmedia', '_embed=wp:term');
-        }
+        var url = buildByIdUrl(base, ids, type || 'posts');
         return fetchJson(url, controller).then(function (posts) {
             return Array.isArray(posts) ? posts : [];
         });
@@ -279,16 +286,21 @@
 
     function fetchPosts(config, controller) {
         var base = config.api;
+        var type = config.type || 'posts';
         if (config.mode === 'manual') {
-            return fetchByIds(base, config.include, controller, config.show && config.show.category);
+            return fetchByIds(base, config.include, controller, false, type);
         }
         if (config.mode === 'hybrid') {
-            var pinned = fetchByIds(base, config.pinned, controller, config.show && config.show.category);
-            var auto = fetchJson(buildAutoUrl(base, config, config.auto_count, config.pinned), controller)
+            var pinned = fetchByIds(base, config.pinned, controller, false, type);
+            var autoCount = parseInt(config.auto_count, 10);
+            if (autoCount > 0) {
+                var auto = fetchJson(buildAutoUrl(base, config, autoCount, config.pinned), controller)
                 .then(function (posts) { return Array.isArray(posts) ? posts : []; });
-            return Promise.all([pinned, auto]).then(function (res) {
-                return res[0].concat(res[1]).slice(0, Math.max(1, parseInt(config.limit, 10) || 5));
-            });
+                return Promise.all([pinned, auto]).then(function (res) {
+                    return res[0].concat(res[1]).slice(0, Math.max(1, parseInt(config.limit, 10) || 5));
+                });
+            }
+            return pinned.then(function (posts) { return Array.isArray(posts) ? posts : []; });
         }
         return fetchJson(buildAutoUrl(base, config, config.limit, config.exclude), controller)
             .then(function (posts) { return sortPosts(Array.isArray(posts) ? posts : [], config.sort); });
@@ -311,7 +323,8 @@
         a.href = href;
         a.textContent = label;
         if (className) { a.className = className; }
-        a.rel = rel || 'noopener';
+        a.target = '_blank';
+        a.rel = rel || 'noopener noreferrer';
         return a;
     }
 
@@ -446,6 +459,15 @@
             return;
         }
 
+        // Allow per-widget text overrides for translation on third-party sites.
+        if (config.texts && typeof config.texts === 'object') {
+            for (var tk in config.texts) {
+                if (Object.prototype.hasOwnProperty.call(config.texts, tk)) {
+                    TEXTS[tk] = config.texts[tk];
+                }
+            }
+        }
+
         // Abort any in-flight request for this element (rapid config changes).
         if (el.__snwController) {
             try { el.__snwController.abort(); } catch (e) { /* ignore */ }
@@ -475,11 +497,13 @@
             if (el.__snwController !== controller) { return; } // superseded
             renderWidget(config, el, Array.isArray(posts) ? posts : []);
         }).catch(function (err) {
-            if (el.__snwController !== controller) { return; }
-            if (err && err.name === 'AbortError') { return; }
+            if (el.__snwController !== controller) { return; } // superseded
             if (typeof console !== 'undefined') {
                 console.debug('[Steigerwald-News Widget] Ladefehler:', err && err.message);
             }
+            // A timeout (AbortError on the still-current controller) and any
+            // other failure both fall through to the configured error state
+            // instead of leaving the loading message hanging forever.
             renderError(config, el);
         });
     }
@@ -488,11 +512,13 @@
         var layout = config.layout || 'list';
         var show = config.show || {};
 
+        // `data-layout` lives on the outer widget element so the layout
+        // selectors in CSS target it correctly.
+        el.setAttribute('data-layout', layout);
         el.replaceChildren();
 
         var root = document.createElement('section');
         root.className = 'snw-root';
-        root.setAttribute('data-layout', layout);
         root.setAttribute('aria-label', config.title || config.source_name || 'Nachrichten');
         applyDesign(root, config);
 
@@ -542,6 +568,7 @@
             el.replaceChildren();
             return;
         }
+        el.setAttribute('data-layout', config.layout || 'list');
         el.replaceChildren();
         var root = document.createElement('section');
         root.className = 'snw-root';

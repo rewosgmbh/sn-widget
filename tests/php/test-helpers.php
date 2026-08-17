@@ -10,7 +10,7 @@
 
 define('ABSPATH', '/tmp/');
 define('SNW_URL', 'https://example.com/wp-content/plugins/steigerwald-news-widget/');
-define('SNW_VERSION', '1.1.0');
+define('SNW_VERSION', '1.1.1');
 
 // --- Stubs for WordPress core functions -------------------------------
 $GLOBALS['__options'] = array();
@@ -68,7 +68,7 @@ $san = SNW_Helpers::sanitize_config($raw);
 snw_assert('sanitize drops unknown key', !isset($san['evil']));
 snw_assert('sanitize invalid mode -> latest', $san['mode'] === 'latest');
 snw_assert('sanitize limit clamped to 20', $san['limit'] === 20);
-snw_assert('sanitize teaser 0 -> default 180', $san['teaser'] === 180);
+snw_assert('sanitize teaser 0 preserved (0 is a valid in-range value)', $san['teaser'] === 0);
 snw_assert('sanitize partner alnum only', $san['partner'] === 'asvsass123');
 snw_assert('sanitize show.image truthy -> true', $san['show']['image'] === true);
 snw_assert('sanitize show.date false kept', $san['show']['date'] === false);
@@ -123,6 +123,12 @@ $p2 = SNW_Presets::save('Vereinswidget 2', SNW_Helpers::default_config());
 snw_assert('two presets', count(SNW_Presets::get_all()) === 2);
 $upd = SNW_Presets::save('Renamed', $cfg, $p1['id']);
 snw_assert('preset update keeps id', $upd['id'] === $p1['id'] && $upd['name'] === 'Renamed');
+// P1: widget id must be bound verbindlich to the preset id on update, even if
+// a different/empty widget_id travelled in the submitted config.
+$stray = SNW_Helpers::default_config();
+$stray['widget_id'] = 'SNW-ZZZZZ';
+$upd2 = SNW_Presets::save('Rebound', $stray, $p1['id']);
+snw_assert('preset update rebinds widget_id to preset id', $upd2['config']['widget_id'] === $p1['id']);
 snw_assert('still two presets after update', count(SNW_Presets::get_all()) === 2);
 $dup = SNW_Presets::duplicate($p2['id']);
 snw_assert('duplicate creates new id', $dup['id'] !== $p2['id'] && strpos($dup['name'], 'Kopie') !== false);
