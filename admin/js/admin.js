@@ -569,6 +569,143 @@
     }
 
     // ------------------------------------------------------------------
+    // Partner requests
+    // ------------------------------------------------------------------
+    function requestsContainer() { return $('#snw-requests-list'); }
+    function requestDetail() { return $('#snw-request-detail'); }
+
+    function loadRequests() {
+        ajax('snw_list_requests').then(function (res) {
+            if (res.success && Array.isArray(res.data)) {
+                renderRequests(res.data);
+            } else {
+                requestsContainer().innerHTML = '<p>' + (I.empty || 'Keine Anfragen.') + '</p>';
+            }
+        }).catch(function () {
+            requestsContainer().innerHTML = '<p>Fehler beim Laden.</p>';
+        });
+    }
+
+    function renderRequests(list) {
+        var box = requestsContainer();
+        if (!box) { return; }
+        if (!list.length) {
+            box.innerHTML = '<p>Keine Anfragen vorhanden.</p>';
+            return;
+        }
+        var rows = list.map(function (r) {
+            var cfg = r.config || {};
+            var summ = (cfg.mode || 'latest') + ' / ' + (cfg.layout || 'list');
+            return '<tr data-req-id="' + escapeHtml(r.id) + '">' +
+                '<td>' + escapeHtml(r.email || '') + '</td>' +
+                '<td>' + escapeHtml(r.name || '—') + '</td>' +
+                '<td>' + escapeHtml(r.domain || '') + '</td>' +
+                '<td>' + escapeHtml(summ) + '</td>' +
+                '<td>' + escapeHtml(r.status || 'pending') + '</td>' +
+                '<td class="snw-req-actions">' +
+                '<button type="button" class="button snw-req-preview" data-id="' + escapeHtml(r.id) + '">Vorschau</button> ' +
+                (r.status === 'accepted'
+                    ? '<button type="button" class="button snw-req-codes" data-id="' + escapeHtml(r.id) + '">Codes</button> '
+                    : '<button type="button" class="button button-primary snw-req-accept" data-id="' + escapeHtml(r.id) + '">Akzeptieren</button> ') +
+                '<button type="button" class="button snw-req-reject" data-id="' + escapeHtml(r.id) + '">Ablehnen</button>' +
+                '</td></tr>';
+        }).join('');
+        box.innerHTML = '<table class="wp-list-table widefat fixed striped snw-req-table"><thead><tr>' +
+            '<th>E-Mail</th><th>Name</th><th>Domain</th><th>Modus/Layout</th><th>Status</th><th>Aktionen</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function previewRequest(req) {
+        var cfg = {};
+        for (var k in req.config) { if (Object.prototype.hasOwnProperty.call(req.config, k)) { cfg[k] = req.config[k]; } }
+        cfg.api = cfg.api || L.apiBase;
+        cfg.source_name = cfg.source_name || L.sourceName;
+        cfg.source_url = cfg.source_url || L.sourceUrl;
+
+        var box = requestDetail();
+        box.innerHTML = '<h3>Vorschau</h3><div class="snw-req-preview" id="snw-req-preview"></div>';
+        var el = $('#snw-req-preview');
+        if (W && W.render) {
+            el.className = 'steigerwald-news-widget';
+            W.render(el, cfg);
+        }
+    }
+
+    function acceptRequest(id) {
+        if (!window.confirm('Anfrage akzeptieren und Einbettungscode erzeugen?')) { return; }
+        ajax('snw_accept_request', { id: id }).then(function (res) {
+            if (res.success) {
+                showAccepted(res.data);
+                loadRequests();
+            } else {
+                requestDetail().innerHTML = '<p>Fehler: ' + escapeHtml((res.data && res.data.message) || '') + '</p>';
+            }
+        }).catch(function () { requestDetail().innerHTML = '<p>Fehler.</p>'; });
+    }
+
+    function showAccepted(data) {
+        var box = requestDetail();
+        box.innerHTML =
+            '<h3>Einbettungscode für ' + escapeHtml(data.email) + '</h3>' +
+            '<p><label>WordPress-Shortcode</label><textarea class="large-text code" rows="2" readonly>' + escapeHtml(data.shortcode) + '</textarea></p>' +
+            '<p><label>HTML-Snippet (beliebige Website)</label><textarea class="large-text code" rows="4" readonly>' + escapeHtml(data.html) + '</textarea></p>' +
+            '<p><a class="button button-primary" href="' + escapeHtml(data.mailto) + '">E-Mail an ' + escapeHtml(data.email) + ' öffnen (mailto)</a></p>';
+    }
+
+    function rejectRequest(id) {
+        if (!window.confirm('Anfrage ablehnen und löschen?')) { return; }
+        ajax('snw_reject_request', { id: id }).then(function () { loadRequests(); requestDetail().innerHTML = ''; });
+    }
+
+    function onRequestsAction(e) {
+        var btn = e.target.closest('button');
+        if (!btn) { return; }
+        var id = btn.getAttribute('data-id');
+        var list = SNW_Requests_cache || [];
+        var req = list.filter(function (r) { return r.id === id; })[0];
+        if (btn.classList.contains('snw-req-preview') && req) {
+            previewRequest(req);
+        } else if (btn.classList.contains('snw-req-accept')) {
+            acceptRequest(id);
+        } else if (btn.classList.contains('snw-req-codes')) {
+            // Re-show stored codes by re-accepting is wrong; just reload list and
+            // inform. For accepted items we re-derive via a lightweight call.
+            ajax('snw_accept_request', { id: id }).then(function (res) {
+                if (res.success) { showAccepted(res.data); }
+            });
+        } else if (btn.classList.contains('snw-req-reject')) {
+            rejectRequest(id);
+        }
+    }
+
+    function createPage() {
+        var slug = $('#snw-builder-slug').value.trim();
+        ajax('snw_create_page', { slug: slug }).then(function (res) {
+            var el = $('#snw-page-status');
+            if (res.success && res.data && res.data.url) {
+                el.innerHTML = ' <a href="' + escapeHtml(res.data.url) + '" target="_blank" rel="noopener">' + escapeHtml(res.data.url) + '</a>';
+            } else {
+                el.textContent = ' Fehler.';
+            }
+        }).catch(function () { $('#snw-page-status').textContent = ' Fehler.'; });
+    }
+
+    // Cache the latest request list so preview/accept can read full configs.
+    var SNW_Requests_cache = [];
+    loadRequests = function () {
+        ajax('snw_list_requests').then(function (res) {
+            if (res.success && Array.isArray(res.data)) {
+                SNW_Requests_cache = res.data;
+                renderRequests(res.data);
+            } else {
+                requestsContainer().innerHTML = '<p>' + (I.empty || 'Keine Anfragen.') + '</p>';
+            }
+        }).catch(function () {
+            requestsContainer().innerHTML = '<p>Fehler beim Laden.</p>';
+        });
+    };
+
+    // ------------------------------------------------------------------
     // Init
     // ------------------------------------------------------------------
     function init() {
@@ -631,6 +768,16 @@
 
         var table = $('#snw-preset-table');
         if (table) { table.addEventListener('click', onPresetAction); }
+
+        var loadBtn = $('#snw-load-requests');
+        if (loadBtn) {
+            loadBtn.addEventListener('click', function () { loadRequests(); });
+            loadRequests();
+        }
+        var panel = $('#snw-requests-panel');
+        if (panel) { panel.addEventListener('click', onRequestsAction); }
+        var createBtn = $('#snw-create-page');
+        if (createBtn) { createBtn.addEventListener('click', createPage); }
 
         applyModeVisibility();
         updatePreview();

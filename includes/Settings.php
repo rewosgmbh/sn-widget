@@ -30,6 +30,11 @@ class SNW_Settings {
         add_action( 'wp_ajax_snw_delete_preset', array( __CLASS__, 'ajax_delete_preset' ) );
         add_action( 'wp_ajax_snw_duplicate_preset', array( __CLASS__, 'ajax_duplicate_preset' ) );
         add_action( 'wp_ajax_snw_get_presets', array( __CLASS__, 'ajax_get_presets' ) );
+
+        add_action( 'wp_ajax_snw_create_page', array( __CLASS__, 'ajax_create_page' ) );
+        add_action( 'wp_ajax_snw_list_requests', array( __CLASS__, 'ajax_list_requests' ) );
+        add_action( 'wp_ajax_snw_accept_request', array( __CLASS__, 'ajax_accept_request' ) );
+        add_action( 'wp_ajax_snw_reject_request', array( __CLASS__, 'ajax_reject_request' ) );
     }
 
     /**
@@ -160,5 +165,127 @@ class SNW_Settings {
             self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
         }
         self::respond( true, SNW_Presets::get_all() );
+    }
+
+    /**
+     * (Re)create the public builder page at the configured (or given) slug.
+     *
+     * @return void
+     */
+    public static function ajax_create_page() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+        $slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
+        $page = SNW_Requests::ensure_builder_page( $slug );
+        if ( ! $page ) {
+            self::respond( false, array( 'message' => __( 'Seite konnte nicht erstellt werden.', 'steigerwald-news-widget' ) ), 500 );
+        }
+        self::respond( true, $page );
+    }
+
+    /**
+     * Return all partner requests.
+     *
+     * @return void
+     */
+    public static function ajax_list_requests() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+        self::respond( true, SNW_Requests::get_all() );
+    }
+
+    /**
+     * Accept a request: create a domain-locked preset and return the embed
+     * codes plus a ready-to-send mailto link.
+     *
+     * @return void
+     */
+    public static function ajax_accept_request() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+        if ( ! $id ) {
+            self::respond( false, array( 'message' => __( 'Ungültige Anfrage.', 'steigerwald-news-widget' ) ), 400 );
+        }
+        $request = SNW_Requests::get( $id );
+        if ( ! $request ) {
+            self::respond( false, array( 'message' => __( 'Anfrage nicht gefunden.', 'steigerwald-news-widget' ) ), 404 );
+        }
+
+        $config = isset( $request['config'] ) && is_array( $request['config'] )
+            ? $request['config']
+            : array();
+        $config['api']         = rest_url( 'wp/v2' );
+        $config['source_name'] = get_bloginfo( 'name' );
+        $config['source_url']  = home_url( '/' );
+
+        $name   = ! empty( $request['name'] ) ? $request['name'] : $request['email'];
+        $preset = SNW_Presets::save( $name, $config );
+        if ( ! $preset ) {
+            self::respond( false, array( 'message' => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ) ), 500 );
+        }
+
+        SNW_Presets::save_meta(
+            $preset['id'],
+            array(
+                'allowed_domain' => $request['domain'],
+                'email'          => $request['email'],
+                'source'         => 'request',
+            )
+        );
+
+        SNW_Requests::update(
+            $id,
+            array(
+                'status'    => 'accepted',
+                'preset_id' => $preset['id'],
+            )
+        );
+
+        $shortcode = '[steigerwald_news_widget id="' . $preset['id'] . '"]';
+        $html      = '<div class="steigerwald-news-widget" data-code="' . $preset['id'] . '"></div>' . "\n" .
+            '<script src="' . esc_url( SNW_Embed_Generator::script_url() ) . '" async></script>';
+
+        $subject = __( 'Dein Steigerwald-News Widget', 'steigerwald-news-widget' );
+        $body    = __( "Hallo,\n\nhier ist der Einbettungscode für dein News-Widget:\n\nWordPress-Shortcode:\n", 'steigerwald-news-widget' ) .
+            $shortcode . "\n\n" .
+            __( "HTML-Snippet (für beliebige Websites):\n", 'steigerwald-news-widget' ) .
+            $html . "\n\n" . __( 'Viele Grüße' . "\n" . 'Steigerwald-News', 'steigerwald-news-widget' );
+
+        $mailto = 'mailto:' . rawurlencode( $request['email'] ) .
+            '?subject=' . rawurlencode( $subject ) .
+            '&body=' . rawurlencode( $body );
+
+        self::respond(
+            true,
+            array(
+                'shortcode' => $shortcode,
+                'html'      => $html,
+                'mailto'    => $mailto,
+                'preset_id' => $preset['id'],
+                'email'     => $request['email'],
+            )
+        );
+    }
+
+    /**
+     * Reject (delete) a request.
+     *
+     * @return void
+     */
+    public static function ajax_reject_request() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+        if ( ! $id ) {
+            self::respond( false, array( 'message' => __( 'Ungültige Anfrage.', 'steigerwald-news-widget' ) ), 400 );
+        }
+        $ok = SNW_Requests::delete( $id );
+        self::respond( $ok, array( 'id' => $id ) );
     }
 }

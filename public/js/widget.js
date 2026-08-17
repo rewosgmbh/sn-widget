@@ -640,6 +640,16 @@
             return;
         }
 
+        // Reject rendering on a domain other than the one the widget was
+        // approved for. The source endpoint already enforces this; this is a
+        // secondary client-side guard.
+        if (typeof location !== 'undefined' && config.allowed_domain &&
+            !domainMatches(config.allowed_domain, location.hostname)) {
+            el.replaceChildren();
+            renderError(config, el, resolveTexts(config));
+            return;
+        }
+
         // Resolve effective texts once per build so async rendering later in
         // this call uses the correct labels even with several widgets present.
         var texts = resolveTexts(config);
@@ -811,6 +821,11 @@
             var el = els[i];
             if (el.__snwBuilt) { continue; }
             el.__snwBuilt = true;
+            var code = el.getAttribute('data-code');
+            if (code) {
+                loadByCode(el, code);
+                continue;
+            }
             var cfg = decodeConfig(el.getAttribute('data-config'));
             if (!cfg) {
                 if (typeof console !== 'undefined') {
@@ -820,6 +835,66 @@
             }
             build(cfg, el);
         }
+    }
+
+    // Determine the source site's wp-json base URL from the widget script tag,
+    // so a cross-site embed can fetch its (domain-locked) configuration.
+    function scriptBaseUrl() {
+        if (typeof document === 'undefined') { return 'wp-json/'; }
+        var scripts = document.querySelectorAll('script[src*="widget.js"]');
+        var src = '';
+        for (var i = scripts.length - 1; i >= 0; i--) {
+            var s = scripts[i].getAttribute('src') || '';
+            if (s) { src = s; break; }
+        }
+        if (!src) { return 'wp-json/'; }
+        var idx = src.indexOf('/wp-content/');
+        if (idx !== -1) {
+            return src.slice(0, idx) + '/wp-json/';
+        }
+        try {
+            var u = new URL(src, (typeof location !== 'undefined' ? location.href : 'http://localhost/'));
+            return u.origin + '/wp-json/';
+        } catch (e) {
+            return 'wp-json/';
+        }
+    }
+
+    // Load a widget configuration by its short code from the source endpoint.
+    // The endpoint enforces the allowed domain server-side; we add a client
+    // side check as a second layer of defence.
+    function loadByCode(el, code) {
+        var url = scriptBaseUrl() + 'snw/v1/widget/' + encodeURIComponent(code);
+        fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'omit',
+            headers: { 'Accept': 'application/json' }
+        }).then(function (res) {
+            if (!res.ok) { throw new Error('HTTP ' + res.status); }
+            return res.json();
+        }).then(function (data) {
+            var cfg = data.config || data;
+            if (data.allowed_domain) { cfg.allowed_domain = data.allowed_domain; }
+            if (typeof location !== 'undefined' && cfg.allowed_domain &&
+                !domainMatches(cfg.allowed_domain, location.hostname)) {
+                renderError(cfg, el, resolveTexts(cfg));
+                return;
+            }
+            build(cfg, el);
+        }).catch(function () {
+            renderError({ on_error: 'message' }, el, resolveTexts({}));
+        });
+    }
+
+    // Compare a request host against an approved domain (exact or subdomain).
+    function domainMatches(allowed, host) {
+        allowed = String(allowed || '').toLowerCase().replace(/:\d+$/, '');
+        host = String(host || '').toLowerCase().replace(/:\d+$/, '');
+        if (!allowed || !host) { return false; }
+        if (host === allowed) { return true; }
+        var suffix = '.' + allowed;
+        return host.slice(-suffix.length) === suffix;
     }
 
     var api = {
@@ -836,6 +911,7 @@
         buildCacheKey: buildCacheKey,
         formatDate: formatDate,
         stripHtml: stripHtml,
+        domainMatches: domainMatches,
         TEXTS: TEXTS
     };
 

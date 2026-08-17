@@ -146,4 +146,37 @@ class SNW_Presets {
         $new_name = $source['name'] . ' ' . __( '(Kopie)', 'steigerwald-news-widget' );
         return self::save( $new_name, $source['config'] );
     }
+
+    /**
+     * Attach partner-request metadata to a stored preset. Used to lock an
+     * accepted widget to the requester's domain and to remember the owner.
+     *
+     * @param string $id
+     * @param array  $meta Keys: allowed_domain, email, source.
+     * @return bool
+     */
+    public static function save_meta( $id, $meta ) {
+        $presets = self::get_all();
+        $found   = false;
+        foreach ( $presets as &$entry ) {
+            if ( (string) $entry['id'] === (string) $id ) {
+                if ( isset( $meta['allowed_domain'] ) ) {
+                    $entry['allowed_domain'] = SNW_Helpers::sanitize_domain( $meta['allowed_domain'] );
+                }
+                if ( isset( $meta['email'] ) ) {
+                    $entry['email'] = sanitize_email( $meta['email'] );
+                }
+                if ( isset( $meta['source'] ) ) {
+                    $entry['source'] = sanitize_text_field( $meta['source'] );
+                }
+                $found = true;
+                break;
+            }
+        }
+        unset( $entry );
+        if ( ! $found ) {
+            return false;
+        }
+        return (bool) update_option( self::OPTION_KEY, $presets, false );
+    }
 }

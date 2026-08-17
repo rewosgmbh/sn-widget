@@ -355,6 +355,26 @@ class SNW_Admin {
 
             <hr>
 
+            <h2><?php echo esc_html__( 'Partner-Anfragen', 'steigerwald-news-widget' ); ?></h2>
+            <p class="description">
+                <?php echo esc_html__( 'Externe Nutzer können auf der öffentlichen Erstellseite ein Widget gestalten und anfragen. Hier siehst du die Einreichungen, kannst sie annehmen (erzeugt einen domain-gebundenen Einbettungscode) oder ablehnen.', 'steigerwald-news-widget' ); ?>
+            </p>
+
+            <p class="snw-requests-settings">
+                <label for="snw-builder-slug"><?php echo esc_html__( 'Adresse der Erstellseite', 'steigerwald-news-widget' ); ?></label>
+                <code>/</code><input type="text" id="snw-builder-slug" class="regular-text" value="<?php echo esc_attr( get_option( 'snw_builder_slug', 'widget/new' ) ); ?>">
+                <button type="button" id="snw-create-page" class="button"><?php echo esc_html__( 'Seite erstellen/aktualisieren', 'steigerwald-news-widget' ); ?></button>
+                <span id="snw-page-status" class="snw-status" role="status" aria-live="polite"></span>
+            </p>
+
+            <div id="snw-requests-panel" class="snw-requests-panel">
+                <button type="button" id="snw-load-requests" class="button"><?php echo esc_html__( 'Anfragen laden', 'steigerwald-news-widget' ); ?></button>
+                <div id="snw-requests-list"></div>
+                <div id="snw-request-detail"></div>
+            </div>
+
+            <hr>
+
             <details class="snw-help">
                 <summary><?php echo esc_html__( 'Hilfe & Erklärung', 'steigerwald-news-widget' ); ?></summary>
                 <ol>

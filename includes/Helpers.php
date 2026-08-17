@@ -400,4 +400,55 @@ class SNW_Helpers {
         }
         return rtrim( $trimmed ) . '…';
     }
+
+    /**
+     * Normalize a user-supplied domain (bare host or full URL) to a lower-case
+     * host without port. Returns an empty string when the value is not a
+     * plausible registered host.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function sanitize_domain( $value ) {
+        $value = trim( (string) $value );
+        if ( '' === $value ) {
+            return '';
+        }
+        if ( ! preg_match( '#^[a-z][a-z0-9+.\-]*://#i', $value ) ) {
+            $value = 'http://' . $value;
+        }
+        $host = wp_parse_url( $value, PHP_URL_HOST );
+        if ( ! $host ) {
+            return '';
+        }
+        $host = strtolower( $host );
+        $host = preg_replace( '/:\d+$/', '', $host );
+        if ( ! preg_match( '/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i', $host ) ) {
+            return '';
+        }
+        return $host;
+    }
+
+    /**
+     * Decide whether a request host is permitted for an approved domain.
+     *
+     * Exact match and subdomains of the approved domain are allowed
+     * (e.g. news.example.com for example.com); any other host is rejected.
+     *
+     * @param string $allowed Approved domain (host).
+     * @param string $host    Request host (may include port).
+     * @return bool
+     */
+    public static function domain_allowed( $allowed, $host ) {
+        $allowed = strtolower( trim( (string) $allowed ) );
+        $host    = strtolower( trim( (string) $host ) );
+        $host    = preg_replace( '/:\d+$/', '', $host );
+        if ( '' === $allowed || '' === $host ) {
+            return false;
+        }
+        if ( $host === $allowed ) {
+            return true;
+        }
+        return substr( $host, - strlen( '.' . $allowed ) ) === '.' . $allowed;
+    }
 }

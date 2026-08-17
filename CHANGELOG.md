@@ -1,8 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.3.0
 
-**Bugfixes (no release):**
+**Neue Funktion: Partner-Widgets & Site-Code**
+
+* Öffentliche Erstellseite `/widget/new` (Slug in den Einstellungen änderbar), auf der externe Nutzer ein Widget gestalten, E-Mail, Zieldomain und (optional) Namen angeben.
+* Custom REST-Endpunkt `POST /wp-json/snw/v1/request` (rate-limitiert: 10 Anfragen/Stunde/IP) nimmt Einreichungen entgegen.
+* Admin-Bereich „Partner-Anfragen": Einreichungen ansehen, Vorschau, **akzeptieren** (erzeugt ein domain-gebundenes Widget + Einbettungscode) oder ablehnen.
+* Einbettbarer **Site-Code**: Shortcode `[steigerwald_news_widget id="…"]` für WordPress sowie HTML-Snippet mit `data-code` für beliebige Websites.
+* Domain-Lock: ein akzeptiertes Widget wird serverseitig (Endpoint prüft Origin/Referer) **nur auf der angegebenen Domain** ausgeliefert; zusätzliche Client-Prüfung im Renderer.
+* Akzeptieren erzeugt einen `mailto:`-Link, über den du den Einbettungscode manuell an die hinterlegte E-Mail sendest (kein SMTP nötig).
+
+**Bugfixes:**
 
 * `scopeCss` behält den Inhalt von `@font-face`/`@keyframes` jetzt korrekt bei,
   statt ihn zu entfernen oder falsch zu scopen. `@media`/`@supports`/`@container`/

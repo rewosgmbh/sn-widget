@@ -25,8 +25,21 @@ class SNW_Plugin {
         add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 
         SNW_Settings::register();
+        SNW_REST::init();
+        SNW_Shortcode::init();
 
         add_filter( 'plugin_action_links_' . plugin_basename( SNW_FILE ), array( __CLASS__, 'action_links' ) );
+    }
+
+    /**
+     * Plugin activation: create the public widget-builder page.
+     *
+     * @return void
+     */
+    public static function activate() {
+        if ( class_exists( 'SNW_Requests' ) ) {
+            SNW_Requests::ensure_builder_page();
+        }
     }
 
     /**
