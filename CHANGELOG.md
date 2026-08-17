@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.0 - 2026-08-17
+
+**Neue Customization-Möglichkeiten für das Widget.**
+
+* **Layout & Bild**: Spaltenzahl für Karten (1–4), Bildseitenverhältnis
+  (16:9, 4:3, 3:2, 1:1, automatisch), Bildfüllung (zuschneiden/einpassen) und
+  Bildposition in der Liste (links/rechts/oben).
+* **Text & Meta**: eigenes „Weiterlesen“-Label, relatives Datumsformat
+  („vor 3 Tagen“), Autor anzeigen und wählbare Überschriften-Ebene (H2–H4).
+* **Theme & Stil**: Hell/Dunkel-Farbschema, Schattenstärke, Textausrichtung
+  sowie ein auf das Widget begrenztes Eigenes-CSS-Feld für Profis.
+* **Verhalten**: Titel-Kürzung (Zeichen), ganzes Card als Klickziel oder nur der
+  Titel, und anpassbare Leer-/Fehlertexte.
+
 ## 1.1.1 - 2026-08-17
 
 **Bugfix-Release – behebt mehrere Release-Blocker aus der Praxis-Prüfung.**

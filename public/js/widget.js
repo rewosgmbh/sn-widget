@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var VERSION = '1.1.0';
+    var VERSION = '1.2.0';
 
     // --- Unicode-safe base64url helpers -------------------------------
     var _atob = (typeof atob !== 'undefined')
@@ -132,15 +132,102 @@
         return names;
     }
 
-    function formatDate(iso) {
+    function formatDate(iso, mode) {
         if (!iso) { return ''; }
         var d = new Date(iso);
         if (isNaN(d.getTime())) { return String(iso); }
+        if (mode === 'relative') { return relativeDate(d); }
         try {
             return new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
         } catch (e) {
             return d.toLocaleDateString();
         }
+    }
+
+    function relativeDate(d) {
+        var secs = (Date.now() - d.getTime()) / 1000;
+        if (isNaN(secs)) { return ''; }
+        var units = [
+            [60, 'Minute', 'Minuten'],
+            [3600, 'Stunde', 'Stunden'],
+            [86400, 'Tag', 'Tagen'],
+            [604800, 'Woche', 'Wochen'],
+            [2592000, 'Monat', 'Monaten'],
+            [31536000, 'Jahr', 'Jahren']
+        ];
+        if (secs < 60) { return 'gerade eben'; }
+        for (var i = units.length - 1; i >= 0; i--) {
+            if (secs >= units[i][0]) {
+                var n = Math.floor(secs / units[i][0]);
+                var word = (n === 1) ? units[i][1] : units[i][2];
+                return 'vor ' + n + ' ' + word;
+            }
+        }
+        return 'gerade eben';
+    }
+
+    function authorName(post) {
+        var embedded = post && post._embedded && post._embedded.author;
+        if (!embedded || !embedded.length) { return ''; }
+        return (embedded[0] && embedded[0].name) ? embedded[0].name : '';
+    }
+
+    function makeHeading(level, className, text) {
+        var tag = (level === 'h2' || level === 'h3' || level === 'h4') ? level : 'h3';
+        var h = document.createElement(tag);
+        h.className = className;
+        if (text) { h.textContent = text; }
+        return h;
+    }
+
+    function ratioToCss(ratio) {
+        if (ratio === '4:3') { return '4 / 3'; }
+        if (ratio === '1:1') { return '1 / 1'; }
+        if (ratio === '3:2') { return '3 / 2'; }
+        if (ratio === 'auto') { return 'auto'; }
+        return '16 / 9';
+    }
+
+    function shadowToCss(shadow) {
+        if (shadow === 'sm') { return '0 1px 2px rgba(0,0,0,.12)'; }
+        if (shadow === 'md') { return '0 2px 8px rgba(0,0,0,.14)'; }
+        if (shadow === 'lg') { return '0 8px 24px rgba(0,0,0,.18)'; }
+        return 'none';
+    }
+
+    // Scope a snippet of user-provided CSS to a single widget instance so it
+    // can never leak to the host page. Returns an empty string if the input
+    // cannot be safely scoped.
+    function scopeCss(css, uid) {
+        if (!css) { return ''; }
+        var prefix = '[data-snw-uid="' + uid + '"]';
+        css = css.replace(/\/\*[\s\S]*?\*\//g, ''); // strip comments
+        var result = '';
+        var i = 0;
+        var n = css.length;
+        while (i < n) {
+            var b = css.indexOf('{', i);
+            if (b === -1) { break; }
+            var selector = css.substring(i, b).trim();
+            var depth = 1;
+            var j = b + 1;
+            while (j < n && depth > 0) {
+                if (css[j] === '{') { depth++; }
+                else if (css[j] === '}') { depth--; }
+                j++;
+            }
+            var body = css.substring(b + 1, j - 1);
+            if (selector.charAt(0) === '@') {
+                result += selector + '{' + scopeCss(body, uid) + '}';
+            } else {
+                var sels = selector.split(',').map(function (s) {
+                    return prefix + ' ' + s.trim();
+                }).join(',');
+                result += sels + '{' + body + '}';
+            }
+            i = j;
+        }
+        return result;
     }
 
     function sortPosts(posts, sort) {
@@ -158,6 +245,7 @@
     }
 
     function buildCacheKey(config) {
+        var d = config.design || {};
         return [
             config.api,
             config.type || 'posts',
@@ -170,7 +258,23 @@
             config.auto_count,
             config.limit,
             config.sort,
-            config.show && config.show.category ? 1 : 0
+            config.show && config.show.category ? 1 : 0,
+            config.show && config.show.author ? 1 : 0,
+            d.columns,
+            d.image_ratio,
+            d.image_fit,
+            d.image_position,
+            d.date_format,
+            d.heading_level,
+            d.theme,
+            d.shadow,
+            d.align,
+            d.title_length,
+            d.link_mode,
+            config.readmore_label || '',
+            config.empty_label || '',
+            config.error_label || '',
+            d.custom_css ? 1 : 0
         ].join('|');
     }
 
@@ -235,6 +339,7 @@
         var embeds = [];
         if (config.show && config.show.image) { embeds.push('wp:featuredmedia'); }
         if (config.show && config.show.category) { embeds.push('wp:term'); }
+        if (config.show && config.show.author) { embeds.push('author'); }
         url.searchParams.set('_embed', embeds.length ? embeds.join(',') : 'wp:featuredmedia');
 
         // Only filter by taxonomy for modes that actually use it, so hidden
@@ -272,7 +377,7 @@
         url.searchParams.set('orderby', 'include');
         url.searchParams.set('status', 'publish');
         url.searchParams.set('_fields', FIELDS);
-        url.searchParams.set('_embed', 'wp:term,wp:featuredmedia');
+        url.searchParams.set('_embed', 'wp:term,wp:featuredmedia,author');
         return url.toString();
     }
 
@@ -315,7 +420,8 @@
         error: 'Die Nachrichten konnten gerade nicht geladen werden.',
         loading: 'Nachrichten werden geladen …',
         untitled: 'Beitrag',
-        branding: 'Nachrichten bereitgestellt von'
+        branding: 'Nachrichten bereitgestellt von',
+        byAuthor: 'von'
     };
 
     function makeLink(href, label, className, rel) {
@@ -328,15 +434,20 @@
         return a;
     }
 
-    function applyDesign(root, config) {
+    function applyDesign(root, el, config) {
         var d = config.design || {};
-        root.style.setProperty('--snw-accent', d.accent || '#c59a20');
-        root.style.setProperty('--snw-bg', d.background || 'transparent');
-        root.style.setProperty('--snw-text', d.text || 'inherit');
+
+        // Color vars are only set when the user chose a value, so the
+        // light/dark theme presets (defined in CSS) can supply defaults.
+        var accent = d.accent || '#c59a20';
+        root.style.setProperty('--snw-accent', accent);
         root.style.setProperty('--snw-link', d.link || 'var(--snw-accent)');
-        root.style.setProperty('--snw-radius', (parseInt(d.radius, 10) || 0) + 'px');
+        if (d.background) { root.style.setProperty('--snw-bg', d.background); }
+        if (d.text) { root.style.setProperty('--snw-text', d.text); }
         if (d.muted) { root.style.setProperty('--snw-muted', d.muted); }
         if (d.border) { root.style.setProperty('--snw-border', d.border); }
+
+        root.style.setProperty('--snw-radius', (parseInt(d.radius, 10) || 0) + 'px');
 
         var spacing = d.spacing || 'normal';
         var gap = spacing === 'compact' ? 10 : (spacing === 'spacious' ? 24 : 16);
@@ -353,16 +464,35 @@
             sans: '"Helvetica Neue", Arial, sans-serif'
         };
         root.style.setProperty('--snw-font', fonts[d.typography] || 'inherit');
+
+        // New customization controls.
+        root.style.setProperty('--snw-columns', String(parseInt(d.columns, 10) || 2));
+        root.style.setProperty('--snw-img-ratio', ratioToCss(d.image_ratio));
+        root.style.setProperty('--snw-img-fit', d.image_fit === 'contain' ? 'contain' : 'cover');
+        root.style.setProperty('--snw-shadow', shadowToCss(d.shadow));
+        root.style.setProperty('--snw-align', (d.align === 'center' || d.align === 'right') ? d.align : 'left');
+
+        root.setAttribute('data-theme', d.theme === 'dark' ? 'dark' : 'light');
+        if (el) {
+            el.setAttribute('data-theme', d.theme === 'dark' ? 'dark' : 'light');
+            el.setAttribute('data-img-pos', (d.image_position === 'right' || d.image_position === 'top') ? d.image_position : 'left');
+            el.setAttribute('data-img-ratio', d.image_ratio || '16:9');
+            el.setAttribute('data-link-mode', d.link_mode === 'card' ? 'card' : 'title');
+        }
     }
 
     function buildItem(config, post, layout) {
         var show = config.show || {};
         var partner = config.partner || '';
         var widgetId = config.widget_id || '';
+        var d = config.design || {};
+        var dateFormat = d.date_format === 'relative' ? 'relative' : 'absolute';
 
         var postUrl = trackedUrl(post.link, partner, widgetId);
         var titleText = stripHtml((post.title && post.title.rendered) || '');
         if (!titleText) { titleText = TEXTS.untitled; }
+        var titleLen = parseInt(d.title_length, 10) || 0;
+        if (titleLen > 0) { titleText = truncate(titleText, titleLen); }
 
         if (layout === 'headlines') {
             var li = document.createElement('li');
@@ -372,7 +502,7 @@
                 var t = document.createElement('time');
                 t.className = 'snw-meta';
                 t.dateTime = post.date;
-                t.textContent = formatDate(post.date);
+                t.textContent = formatDate(post.date, dateFormat);
                 li.appendChild(t);
             }
             return li;
@@ -397,17 +527,27 @@
             article.appendChild(link);
         }
 
-        var content = document.createElement('div');
-        content.className = 'snw-content';
+        var contentEl = document.createElement('div');
+        contentEl.className = 'snw-content';
 
         if (show.date && post.date) {
             var meta = document.createElement('p');
             meta.className = 'snw-meta';
             var time = document.createElement('time');
             time.dateTime = post.date;
-            time.textContent = formatDate(post.date);
+            time.textContent = formatDate(post.date, dateFormat);
             meta.appendChild(time);
-            content.appendChild(meta);
+            contentEl.appendChild(meta);
+        }
+
+        if (show.author) {
+            var an = authorName(post);
+            if (an) {
+                var am = document.createElement('p');
+                am.className = 'snw-meta snw-author';
+                am.textContent = TEXTS.byAuthor + ' ' + an;
+                contentEl.appendChild(am);
+            }
         }
 
         if (show.category) {
@@ -421,14 +561,13 @@
                     var catLink = makeLink(base + '/?cat=' + encodeURIComponent(c.id), c.name, 'snw-cat-link');
                     catWrap.appendChild(catLink);
                 });
-                content.appendChild(catWrap);
+                contentEl.appendChild(catWrap);
             }
         }
 
-        var h = document.createElement('h3');
-        h.className = 'snw-title';
-        h.appendChild(makeLink(postUrl, titleText));
-        content.appendChild(h);
+        var heading = makeHeading(d.heading_level, 'snw-title');
+        heading.appendChild(makeLink(postUrl, titleText, 'snw-title-link'));
+        contentEl.appendChild(heading);
 
         if (show.excerpt && layout !== 'compact' && layout !== 'headlines') {
             var raw = stripHtml((post.excerpt && post.excerpt.rendered) || '');
@@ -437,17 +576,53 @@
                 var p = document.createElement('p');
                 p.className = 'snw-excerpt';
                 p.textContent = excerptText;
-                content.appendChild(p);
+                contentEl.appendChild(p);
             }
         }
 
         if (show.readmore && layout !== 'headlines') {
-            var rm = makeLink(postUrl, TEXTS.readmore, 'snw-readmore');
-            content.appendChild(rm);
+            var rm = makeLink(postUrl, (config.readmore_label || TEXTS.readmore), 'snw-readmore');
+            contentEl.appendChild(rm);
         }
 
-        article.appendChild(content);
+        article.appendChild(contentEl);
         return article;
+    }
+
+    // Resolve the effective text set for a single widget instance. We copy
+    // the shared TEXTS defaults and layer per-widget overrides on top, so
+    // multiple widgets on one page can use different labels without clobbering
+    // each other's module-level state.
+    function resolveTexts(config) {
+        var t = {};
+        for (var k in TEXTS) {
+            if (Object.prototype.hasOwnProperty.call(TEXTS, k)) { t[k] = TEXTS[k]; }
+        }
+        if (config.texts && typeof config.texts === 'object') {
+            for (var tk in config.texts) {
+                if (Object.prototype.hasOwnProperty.call(config.texts, tk)) { t[tk] = config.texts[tk]; }
+            }
+        }
+        if (config.readmore_label) { t.readmore = config.readmore_label; }
+        if (config.empty_label) { t.empty = config.empty_label; }
+        if (config.error_label) { t.error = config.error_label; }
+        return t;
+    }
+
+    var uidCounter = 0;
+
+    // Inject user-provided custom CSS, scoped to this widget instance only.
+    function injectCustomCss(el, config) {
+        var css = config.design && config.design.custom_css;
+        if (!css) { return; }
+        if (!el.__snwUid) { el.__snwUid = 'snw-' + (++uidCounter); }
+        el.setAttribute('data-snw-uid', el.__snwUid);
+        var scoped = scopeCss(css, el.__snwUid);
+        if (!scoped) { return; }
+        var style = document.createElement('style');
+        style.setAttribute('data-snw-custom', '1');
+        style.textContent = scoped;
+        el.appendChild(style);
     }
 
     function build(config, el) {
@@ -459,14 +634,9 @@
             return;
         }
 
-        // Allow per-widget text overrides for translation on third-party sites.
-        if (config.texts && typeof config.texts === 'object') {
-            for (var tk in config.texts) {
-                if (Object.prototype.hasOwnProperty.call(config.texts, tk)) {
-                    TEXTS[tk] = config.texts[tk];
-                }
-            }
-        }
+        // Resolve effective texts once per build so async rendering later in
+        // this call uses the correct labels even with several widgets present.
+        var texts = resolveTexts(config);
 
         // Abort any in-flight request for this element (rapid config changes).
         if (el.__snwController) {
@@ -480,7 +650,7 @@
 
         var loading = document.createElement('p');
         loading.className = 'snw-state snw-loading';
-        loading.textContent = TEXTS.loading;
+        loading.textContent = texts.loading;
         el.replaceChildren(loading);
 
         var key = buildCacheKey(config);
@@ -495,7 +665,7 @@
 
         proceed.then(function (posts) {
             if (el.__snwController !== controller) { return; } // superseded
-            renderWidget(config, el, Array.isArray(posts) ? posts : []);
+            renderWidget(config, el, Array.isArray(posts) ? posts : [], texts);
         }).catch(function (err) {
             if (el.__snwController !== controller) { return; } // superseded
             if (typeof console !== 'undefined') {
@@ -504,13 +674,14 @@
             // A timeout (AbortError on the still-current controller) and any
             // other failure both fall through to the configured error state
             // instead of leaving the loading message hanging forever.
-            renderError(config, el);
+            renderError(config, el, texts);
         });
     }
 
-    function renderWidget(config, el, posts) {
+    function renderWidget(config, el, posts, texts) {
         var layout = config.layout || 'list';
         var show = config.show || {};
+        texts = texts || resolveTexts(config);
 
         // `data-layout` lives on the outer widget element so the layout
         // selectors in CSS target it correctly.
@@ -520,7 +691,7 @@
         var root = document.createElement('section');
         root.className = 'snw-root';
         root.setAttribute('aria-label', config.title || config.source_name || 'Nachrichten');
-        applyDesign(root, config);
+        applyDesign(root, el, config);
 
         if (config.title) {
             var heading = document.createElement('h2');
@@ -532,9 +703,10 @@
         if (!posts.length) {
             var empty = document.createElement('p');
             empty.className = 'snw-state snw-empty';
-            empty.textContent = TEXTS.empty;
+            empty.textContent = texts.empty;
             root.appendChild(empty);
             el.appendChild(root);
+            injectCustomCss(el, config);
             return;
         }
 
@@ -553,7 +725,7 @@
         if (show.branding && config.source_name) {
             var branding = document.createElement('p');
             branding.className = 'snw-branding';
-            branding.appendChild(document.createTextNode(TEXTS.branding + ' '));
+            branding.appendChild(document.createTextNode(texts.branding + ' '));
             var base = (config.source_url || '').replace(/\/+$/, '');
             var srcLink = makeLink(trackedUrl(base || '#', config.partner, config.widget_id), config.source_name, 'snw-branding-link', 'noopener nofollow');
             branding.appendChild(srcLink);
@@ -561,18 +733,20 @@
         }
 
         el.appendChild(root);
+        injectCustomCss(el, config);
     }
 
-    function renderError(config, el) {
+    function renderError(config, el, texts) {
         if (config.on_error === 'hide') {
             el.replaceChildren();
             return;
         }
+        texts = texts || resolveTexts(config);
         el.setAttribute('data-layout', config.layout || 'list');
         el.replaceChildren();
         var root = document.createElement('section');
         root.className = 'snw-root';
-        applyDesign(root, config);
+        applyDesign(root, el, config);
         if (config.title) {
             var heading = document.createElement('h2');
             heading.className = 'snw-heading';
@@ -581,9 +755,10 @@
         }
         var err = document.createElement('p');
         err.className = 'snw-state snw-error';
-        err.textContent = TEXTS.error;
+        err.textContent = texts.error;
         root.appendChild(err);
         el.appendChild(root);
+        injectCustomCss(el, config);
     }
 
     // ------------------------------------------------------------------
@@ -678,8 +853,8 @@
         '.steigerwald-news-widget .snw-list--headlines .snw-item{display:flex;gap:8px;align-items:baseline;}',
         '.steigerwald-news-widget .snw-item:last-child{border-bottom:0;padding-bottom:0;}',
         '.steigerwald-news-widget[data-layout="list"] .snw-item{display:grid;grid-template-columns:minmax(96px,150px) 1fr;gap:14px;align-items:start;}',
-        '.steigerwald-news-widget .snw-image-link{display:block;overflow:hidden;aspect-ratio:16/9;background:rgba(127,127,127,.08);border-radius:var(--snw-radius);}',
-        '.steigerwald-news-widget .snw-image{display:block;width:100%;height:100%;object-fit:cover;}',
+        '.steigerwald-news-widget .snw-image-link{display:block;overflow:hidden;aspect-ratio:var(--snw-img-ratio,16/9);background:rgba(127,127,127,.08);border-radius:var(--snw-radius);}',
+        '.steigerwald-news-widget .snw-image{display:block;width:100%;height:100%;object-fit:var(--snw-img-fit,cover);}',
         '.steigerwald-news-widget .snw-content{min-width:0;}',
         '.steigerwald-news-widget .snw-meta{margin:0 0 5px;color:var(--snw-muted);font-size:.82em;}',
         '.steigerwald-news-widget .snw-cat{margin:0 0 4px;color:var(--snw-muted);font-size:.8em;text-transform:uppercase;letter-spacing:.03em;}',
@@ -696,13 +871,27 @@
         '.steigerwald-news-widget .snw-branding-link{color:var(--snw-muted);text-decoration:none;}',
         '.steigerwald-news-widget .snw-branding-link:hover{text-decoration:underline;}',
         '.steigerwald-news-widget .snw-state{margin:0;padding:10px 0;color:var(--snw-muted);font-size:.92em;}',
-        '.steigerwald-news-widget[data-layout="cards"] .snw-list{grid-template-columns:repeat(2,minmax(0,1fr));}',
-        '.steigerwald-news-widget[data-layout="cards"] .snw-item{display:block;overflow:hidden;padding:0;border:1px solid var(--snw-border);border-radius:var(--snw-radius);background:var(--snw-bg);}',
-        '.steigerwald-news-widget[data-layout="cards"] .snw-image-link{border-radius:0;aspect-ratio:16/10;}',
+        '.steigerwald-news-widget[data-layout="cards"] .snw-list{grid-template-columns:repeat(var(--snw-columns,2),minmax(0,1fr));}',
+        '.steigerwald-news-widget[data-layout="cards"] .snw-item{display:block;overflow:hidden;padding:0;border:1px solid var(--snw-border);border-radius:var(--snw-radius);background:var(--snw-bg);box-shadow:var(--snw-shadow,none);}',
+        '.steigerwald-news-widget[data-layout="cards"] .snw-image-link{border-radius:0;aspect-ratio:var(--snw-img-ratio,16/9);}',
         '.steigerwald-news-widget[data-layout="cards"] .snw-content{padding:12px 13px 14px;}',
+        '.steigerwald-news-widget[data-layout="list"] .snw-item{box-shadow:var(--snw-shadow,none);}',
+        '.steigerwald-news-widget[data-layout="cards"] .snw-item{text-align:var(--snw-align,left);}',
+        '.steigerwald-news-widget .snw-root{text-align:var(--snw-align,left);}',
         '.steigerwald-news-widget[data-layout="compact"] .snw-image-link,.steigerwald-news-widget[data-layout="compact"] .snw-excerpt{display:none!important;}',
         '.steigerwald-news-widget[data-layout="compact"] .snw-item{display:block;}',
         '.steigerwald-news-widget .snw-item:focus-within,.steigerwald-news-widget a:focus-visible{outline:2px solid var(--snw-accent);outline-offset:2px;}',
+        '.steigerwald-news-widget[data-img-pos="right"][data-layout="list"] .snw-item{grid-template-columns:1fr minmax(96px,150px);}',
+        '.steigerwald-news-widget[data-img-pos="right"][data-layout="list"] .snw-image-link{order:2;}',
+        '.steigerwald-news-widget[data-img-pos="top"][data-layout="list"] .snw-item{grid-template-columns:1fr;}',
+        '.steigerwald-news-widget[data-img-pos="top"][data-layout="list"] .snw-image-link{margin-bottom:10px;}',
+        '.steigerwald-news-widget[data-img-ratio="auto"] .snw-image-link{aspect-ratio:auto;}',
+        '.steigerwald-news-widget[data-img-ratio="auto"] .snw-image{height:auto;max-height:360px;}',
+        '.steigerwald-news-widget .snw-author{margin:0 0 5px;}',
+        '.steigerwald-news-widget[data-theme="dark"]{--snw-bg:#1c1c1e;--snw-text:#f2f2f2;--snw-border:rgba(255,255,255,.18);--snw-muted:rgba(255,255,255,.62);--snw-link:var(--snw-accent);}',
+        '.steigerwald-news-widget[data-link-mode="card"] .snw-item{position:relative;}',
+        '.steigerwald-news-widget[data-link-mode="card"] .snw-title-link::after{content:"";position:absolute;inset:0;}',
+        '.steigerwald-news-widget[data-link-mode="card"] .snw-item a{position:relative;z-index:1;}',
         '@container (max-width:520px){',
         '.steigerwald-news-widget[data-layout="list"] .snw-item{grid-template-columns:96px 1fr;gap:11px;}',
         '.steigerwald-news-widget[data-layout="cards"] .snw-list{grid-template-columns:1fr;}',

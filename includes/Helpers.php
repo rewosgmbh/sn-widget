@@ -49,20 +49,36 @@ class SNW_Helpers {
                 'excerpt'  => true,
                 'readmore' => true,
                 'branding' => true,
+                'author'   => false,
             ),
             'teaser'      => 180,
             'design'      => array(
-                'accent'     => '#c59a20',
-                'background' => '',
-                'text'       => '',
-                'muted'      => '',
-                'border'     => '',
-                'link'       => '',
-                'radius'     => 8,
-                'spacing'    => 'normal',
-                'typography' => 'host',
+                'accent'        => '#c59a20',
+                'background'    => '',
+                'text'          => '',
+                'muted'         => '',
+                'border'        => '',
+                'link'          => '',
+                'radius'        => 8,
+                'spacing'       => 'normal',
+                'typography'    => 'host',
+                'columns'       => 2,
+                'image_ratio'   => '16:9',
+                'image_fit'     => 'cover',
+                'image_position' => 'left',
+                'date_format'   => 'absolute',
+                'heading_level' => 'h3',
+                'theme'         => 'light',
+                'shadow'        => 'none',
+                'align'         => 'left',
+                'title_length'  => 0,
+                'link_mode'     => 'title',
+                'custom_css'    => '',
             ),
-            'on_error'    => 'message',
+            'readmore_label' => '',
+            'empty_label'    => '',
+            'error_label'    => '',
+            'on_error'       => 'message',
         );
     }
 
@@ -137,7 +153,7 @@ class SNW_Helpers {
 
         // Boolean show map.
         if ( isset( $raw['show'] ) && is_array( $raw['show'] ) ) {
-            foreach ( array( 'image', 'date', 'category', 'excerpt', 'readmore', 'branding' ) as $key ) {
+            foreach ( array( 'image', 'date', 'category', 'excerpt', 'readmore', 'branding', 'author' ) as $key ) {
                 if ( isset( $raw['show'][ $key ] ) ) {
                     $cfg['show'][ $key ] = (bool) $raw['show'][ $key ];
                 }
@@ -164,11 +180,63 @@ class SNW_Helpers {
             if ( isset( $design['typography'] ) && in_array( $design['typography'], $typos, true ) ) {
                 $cfg['design']['typography'] = $design['typography'];
             }
+            $cfg['design']['columns'] = self::clamp_int( isset( $design['columns'] ) ? $design['columns'] : 2, 1, 4, 2 );
+            $ratios = array( '16:9', '4:3', '1:1', '3:2', 'auto' );
+            if ( isset( $design['image_ratio'] ) && in_array( $design['image_ratio'], $ratios, true ) ) {
+                $cfg['design']['image_ratio'] = $design['image_ratio'];
+            }
+            $fits = array( 'cover', 'contain' );
+            if ( isset( $design['image_fit'] ) && in_array( $design['image_fit'], $fits, true ) ) {
+                $cfg['design']['image_fit'] = $design['image_fit'];
+            }
+            $positions = array( 'left', 'right', 'top' );
+            if ( isset( $design['image_position'] ) && in_array( $design['image_position'], $positions, true ) ) {
+                $cfg['design']['image_position'] = $design['image_position'];
+            }
+            $date_formats = array( 'absolute', 'relative' );
+            if ( isset( $design['date_format'] ) && in_array( $design['date_format'], $date_formats, true ) ) {
+                $cfg['design']['date_format'] = $design['date_format'];
+            }
+            $levels = array( 'h2', 'h3', 'h4' );
+            if ( isset( $design['heading_level'] ) && in_array( $design['heading_level'], $levels, true ) ) {
+                $cfg['design']['heading_level'] = $design['heading_level'];
+            }
+            $themes = array( 'light', 'dark' );
+            if ( isset( $design['theme'] ) && in_array( $design['theme'], $themes, true ) ) {
+                $cfg['design']['theme'] = $design['theme'];
+            }
+            $shadows = array( 'none', 'sm', 'md', 'lg' );
+            if ( isset( $design['shadow'] ) && in_array( $design['shadow'], $shadows, true ) ) {
+                $cfg['design']['shadow'] = $design['shadow'];
+            }
+            $aligns = array( 'left', 'center', 'right' );
+            if ( isset( $design['align'] ) && in_array( $design['align'], $aligns, true ) ) {
+                $cfg['design']['align'] = $design['align'];
+            }
+            $cfg['design']['title_length'] = self::clamp_int( isset( $design['title_length'] ) ? $design['title_length'] : 0, 0, 200, 0 );
+            $link_modes = array( 'title', 'card' );
+            if ( isset( $design['link_mode'] ) && in_array( $design['link_mode'], $link_modes, true ) ) {
+                $cfg['design']['link_mode'] = $design['link_mode'];
+            }
+            if ( isset( $design['custom_css'] ) && is_string( $design['custom_css'] ) ) {
+                $cfg['design']['custom_css'] = self::sanitize_css( $design['custom_css'] );
+            }
         }
 
         // Enum: on_error.
         if ( isset( $raw['on_error'] ) && in_array( $raw['on_error'], array( 'message', 'hide' ), true ) ) {
             $cfg['on_error'] = $raw['on_error'];
+        }
+
+        // Free-text labels (localization of the public messages).
+        if ( isset( $raw['readmore_label'] ) && is_string( $raw['readmore_label'] ) ) {
+            $cfg['readmore_label'] = sanitize_text_field( substr( $raw['readmore_label'], 0, 80 ) );
+        }
+        if ( isset( $raw['empty_label'] ) && is_string( $raw['empty_label'] ) ) {
+            $cfg['empty_label'] = sanitize_text_field( substr( $raw['empty_label'], 0, 160 ) );
+        }
+        if ( isset( $raw['error_label'] ) && is_string( $raw['error_label'] ) ) {
+            $cfg['error_label'] = sanitize_text_field( substr( $raw['error_label'], 0, 160 ) );
         }
 
         $cfg['v'] = 1;
@@ -220,6 +288,23 @@ class SNW_Helpers {
             return $value;
         }
         return '';
+    }
+
+    /**
+     * Sanitize free-form custom CSS for the "pro" styling box.
+     *
+     * We never execute it; it is injected inside a scoped <style> on the
+     * embed. We strip control characters and any angle brackets so the value
+     * can neither break out of the style element nor smuggle markup, and we
+     * cap the length to keep payloads sane.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function sanitize_css( $value ) {
+        $value = (string) $value;
+        $value = preg_replace( '/[\x00-\x1F\x7F<>]/', '', $value );
+        return substr( $value, 0, 4000 );
     }
 
     /**

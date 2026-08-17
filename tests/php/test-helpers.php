@@ -10,7 +10,7 @@
 
 define('ABSPATH', '/tmp/');
 define('SNW_URL', 'https://example.com/wp-content/plugins/steigerwald-news-widget/');
-define('SNW_VERSION', '1.1.1');
+define('SNW_VERSION', '1.2.0');
 
 // --- Stubs for WordPress core functions -------------------------------
 $GLOBALS['__options'] = array();
@@ -91,6 +91,47 @@ snw_assert('sanitize valid layout kept', $san2['layout'] === 'cards');
 snw_assert('sanitize valid accent kept', $san2['design']['accent'] === '#ff0000');
 snw_assert('sanitize valid spacing kept', $san2['design']['spacing'] === 'spacious');
 snw_assert('sanitize valid show.category kept', $san2['show']['category'] === true);
+
+// --- sanitize_config: new customization fields ---
+$raw3 = array(
+    'design' => array(
+        'columns' => 99, 'image_ratio' => '9:9', 'image_fit' => 'stretch',
+        'image_position' => 'bottom', 'date_format' => 'fancy', 'heading_level' => 'h9',
+        'theme' => 'neon', 'shadow' => 'huge', 'align' => 'justify', 'title_length' => 999,
+        'link_mode' => 'whole', 'custom_css' => '.x{color:red}</style><script>bad()</script>',
+    ),
+    'show' => array('author' => 'yes'),
+    'readmore_label' => ' <b>Mehr</b> ', 'empty_label' => 'Nix', 'error_label' => 'Fehler',
+);
+$san3 = SNW_Helpers::sanitize_config($raw3);
+snw_assert('sanitize columns clamped to 4', $san3['design']['columns'] === 4);
+snw_assert('sanitize invalid image_ratio -> 16:9', $san3['design']['image_ratio'] === '16:9');
+snw_assert('sanitize invalid image_fit -> cover', $san3['design']['image_fit'] === 'cover');
+snw_assert('sanitize invalid image_position -> left', $san3['design']['image_position'] === 'left');
+snw_assert('sanitize invalid date_format -> absolute', $san3['design']['date_format'] === 'absolute');
+snw_assert('sanitize invalid heading_level -> h3', $san3['design']['heading_level'] === 'h3');
+snw_assert('sanitize invalid theme -> light', $san3['design']['theme'] === 'light');
+snw_assert('sanitize invalid shadow -> none', $san3['design']['shadow'] === 'none');
+snw_assert('sanitize invalid align -> left', $san3['design']['align'] === 'left');
+snw_assert('sanitize title_length clamped to 200', $san3['design']['title_length'] === 200);
+snw_assert('sanitize invalid link_mode -> title', $san3['design']['link_mode'] === 'title');
+snw_assert('sanitize custom_css strips tags', strpos($san3['design']['custom_css'], '<') === false && strpos($san3['design']['custom_css'], '>') === false);
+snw_assert('sanitize show.author truthy -> true', $san3['show']['author'] === true);
+snw_assert('sanitize readmore_label strips tags', $san3['readmore_label'] === 'Mehr');
+snw_assert('sanitize empty_label kept', $san3['empty_label'] === 'Nix');
+snw_assert('sanitize error_label kept', $san3['error_label'] === 'Fehler');
+
+$raw4 = array(
+    'design' => array('columns' => 3, 'image_ratio' => '1:1', 'image_fit' => 'contain', 'image_position' => 'top', 'date_format' => 'relative', 'heading_level' => 'h4', 'theme' => 'dark', 'shadow' => 'lg', 'align' => 'center', 'title_length' => 0, 'link_mode' => 'card', 'custom_css' => '.x{color:red}'),
+    'show' => array('author' => false),
+);
+$san4 = SNW_Helpers::sanitize_config($raw4);
+snw_assert('sanitize valid columns kept', $san4['design']['columns'] === 3);
+snw_assert('sanitize valid image_ratio kept', $san4['design']['image_ratio'] === '1:1');
+snw_assert('sanitize valid theme kept', $san4['design']['theme'] === 'dark');
+snw_assert('sanitize valid link_mode kept', $san4['design']['link_mode'] === 'card');
+snw_assert('sanitize title_length 0 kept', $san4['design']['title_length'] === 0);
+snw_assert('sanitize show.author false kept', $san4['show']['author'] === false);
 
 // --- widget id generation ---
 $wid = SNW_Helpers::generate_widget_id();

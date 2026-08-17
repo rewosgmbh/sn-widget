@@ -14,7 +14,9 @@ function FakeNode(tag) {
     this.className = '';
     this.children = [];
     this.attributes = {};
-    this.style = { setProperty: function () {} };
+    this._props = {};
+    var self = this;
+    this.style = { setProperty: function (k, v) { self._props[k] = v; } };
     this.dataset = {};
     this._text = '';
     this._html = '';
@@ -273,6 +275,123 @@ console.log('Steigerwald-News Widget — render tests');
         var anchors = [];
         walk(el, function (n) { return n.tagName === 'a'; }, anchors);
         ok('links open in new tab (target=_blank)', anchors.length > 0 && anchors.every(function (a) { return a.target === '_blank'; }));
+    });
+})();
+
+// --- New customization: design vars + data attributes ------------------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    var captured = {};
+    el.style = { setProperty: function (k, v) { captured[k] = v; } };
+    return renderSync(el, baseConfig({
+        layout: 'cards', design: { columns: 3, image_ratio: '4:3', image_fit: 'contain', image_position: 'right', theme: 'dark', shadow: 'md', align: 'center', link_mode: 'card' }
+    })).then(function () {
+        var root = findByClass(el, 'snw-root')[0] || el;
+        ok('columns var = 3', root._props['--snw-columns'] === '3');
+        ok('image ratio var = 4 / 3', root._props['--snw-img-ratio'] === '4 / 3');
+        ok('image fit var = contain', root._props['--snw-img-fit'] === 'contain');
+        ok('shadow var = md', root._props['--snw-shadow'] === '0 2px 8px rgba(0,0,0,.14)');
+        ok('align var = center', root._props['--snw-align'] === 'center');
+        ok('data-theme dark on outer', el.getAttribute('data-theme') === 'dark');
+        ok('data-img-pos right on outer', el.getAttribute('data-img-pos') === 'right');
+        ok('data-link-mode card on outer', el.getAttribute('data-link-mode') === 'card');
+    });
+})();
+
+// --- New customization: author + relative date -------------------------
+(function () {
+    setMock([{
+        id: 1, date: '2020-01-01T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' },
+        _embedded: { author: [ { name: 'Max Mustermann' } ] }
+    }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({
+        show: { image: true, date: true, category: false, excerpt: true, readmore: true, branding: true, author: true },
+        design: { date_format: 'relative' }
+    })).then(function () {
+        var auth = findByClass(el, 'snw-author');
+        ok('author meta rendered', auth.length === 1);
+        ok('author name shown', auth.length && textOf(auth[0]).indexOf('Max Mustermann') !== -1);
+        var times = [];
+        walk(el, function (n) { return n.tagName === 'time'; }, times);
+        ok('relative date uses "vor"', times.length && /vor /.test(times[0]._text));
+    });
+})();
+
+// --- New customization: heading level ----------------------------------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ design: { heading_level: 'h2' } })).then(function () {
+        var t = findByClass(el, 'snw-title');
+        ok('item title uses H2', t.length === 1 && t[0].tagName === 'h2');
+    });
+})();
+
+// --- New customization: title truncation ------------------------------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'Ein sehr langer Beitragstitel der gekürzt werden soll' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ design: { title_length: 10 } })).then(function () {
+        var t = findByClass(el, 'snw-title');
+        var txt = textOf(t[0]);
+        ok('title truncated', t.length && txt.length <= 12);
+        ok('title truncation adds ellipsis', t.length && txt.indexOf('…') !== -1);
+    });
+})();
+
+// --- New customization: custom readmore / empty / error labels --------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ readmore_label: 'Mehr erfahren' })).then(function () {
+        var rm = findByClass(el, 'snw-readmore');
+        ok('custom readmore label', rm.length === 1 && rm[0]._text === 'Mehr erfahren');
+    });
+})();
+
+(function () {
+    setMock([]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ empty_label: 'Nichts da.' })).then(function () {
+        var e = findByClass(el, 'snw-empty');
+        ok('custom empty label', e.length === 1 && e[0]._text === 'Nichts da.');
+    });
+})();
+
+(function () {
+    setFetchError();
+    var el = makeEl();
+    return renderSync(el, baseConfig({ on_error: 'message', error_label: 'Oops.' })).then(function () {
+        var e = findByClass(el, 'snw-error');
+        ok('custom error label', e.length === 1 && e[0]._text === 'Oops.');
+    });
+})();
+
+// --- New customization: scoped custom CSS injection --------------------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ design: { custom_css: '.snw-title { color: red; }' } })).then(function () {
+        var styles = [];
+        walk(el, function (n) { return n.tagName === 'style'; }, styles);
+        var custom = styles.filter(function (s) { return s.getAttribute('data-snw-custom') === '1'; });
+        ok('custom css injected', custom.length === 1);
+        var uid = el.getAttribute('data-snw-uid');
+        ok('custom css is scoped to widget uid', custom.length && custom[0]._text.indexOf('[data-snw-uid="' + uid + '"]') !== -1);
+        ok('custom css cannot break out', custom.length && custom[0]._text.indexOf('<') === -1);
+    });
+})();
+
+// --- New customization: card link mode mark-up -------------------------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ design: { link_mode: 'card' } })).then(function () {
+        var links = [];
+        walk(el, function (n) { return n.tagName === 'a' && (' ' + n.className + ' ').indexOf(' snw-title-link ') !== -1; }, links);
+        ok('card mode keeps title link', links.length === 1);
     });
 })();
 
