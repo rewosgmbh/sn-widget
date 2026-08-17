@@ -304,6 +304,8 @@ class SNW_Helpers {
     public static function sanitize_css( $value ) {
         $value = (string) $value;
         $value = preg_replace( '/[\x00-\x1F\x7F<>]/', '', $value );
+        // Block external stylesheet inclusion via @import.
+        $value = preg_replace( '/@import\b[^;]*;?/i', '', $value );
         return substr( $value, 0, 4000 );
     }
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+**Bugfixes (no release):**
+
+* `scopeCss` behält den Inhalt von `@font-face`/`@keyframes` jetzt korrekt bei,
+  statt ihn zu entfernen oder falsch zu scopen. `@media`/`@supports`/`@container`/
+  `@layer` werden weiterhin korrekt auf das Widget begrenzt.
+* `sanitize_css` entfernt nun `@import`, um das Laden externer Stylesheets über
+  das Profi-CSS-Feld zu verhindern.
+
 ## 1.2.0 - 2026-08-17
 
 **Neue Customization-Möglichkeiten für das Widget.**

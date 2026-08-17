@@ -116,6 +116,7 @@ snw_assert('sanitize invalid align -> left', $san3['design']['align'] === 'left'
 snw_assert('sanitize title_length clamped to 200', $san3['design']['title_length'] === 200);
 snw_assert('sanitize invalid link_mode -> title', $san3['design']['link_mode'] === 'title');
 snw_assert('sanitize custom_css strips tags', strpos($san3['design']['custom_css'], '<') === false && strpos($san3['design']['custom_css'], '>') === false);
+snw_assert('sanitize custom_css strips @import', strpos(SNW_Helpers::sanitize_css("@import url('http://evil/x.css'); .x{color:red}"), '@import') === false);
 snw_assert('sanitize show.author truthy -> true', $san3['show']['author'] === true);
 snw_assert('sanitize readmore_label strips tags', $san3['readmore_label'] === 'Mehr');
 snw_assert('sanitize empty_label kept', $san3['empty_label'] === 'Nix');

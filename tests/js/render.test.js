@@ -395,6 +395,21 @@ console.log('Steigerwald-News Widget — render tests');
     });
 })();
 
+// --- Custom CSS scoping preserves @font-face / scopes @media ----------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    var css = "@font-face{font-family:'X';src:url(x.woff2);}.snw-title{color:red;}@media(max-width:600px){.snw-title{color:blue;}}";
+    return renderSync(el, baseConfig({ design: { custom_css: css } })).then(function () {
+        var custom = [];
+        walk(el, function (n) { return n.tagName === 'style' && n.getAttribute && n.getAttribute('data-snw-custom'); }, custom);
+        var txt = custom.length ? custom[0]._text : '';
+        ok('custom css preserves @font-face body', txt.indexOf("@font-face{font-family:'X';src:url(x.woff2);}") !== -1);
+        ok('custom css scopes normal rule', txt.indexOf('[data-snw-uid="' + el.__snwUid + '"] .snw-title{color:red;}') !== -1);
+        ok('custom css scopes @media inner rule', txt.indexOf('@media(max-width:600px){[data-snw-uid="' + el.__snwUid + '"] .snw-title{color:blue;}}') !== -1);
+    });
+})();
+
 setTimeout(function () {
     console.log('\n' + pass + ' assertions passed, ' + fail + ' failed.');
     process.exit(fail > 0 ? 1 : 0);

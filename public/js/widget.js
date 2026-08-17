@@ -218,7 +218,13 @@
             }
             var body = css.substring(b + 1, j - 1);
             if (selector.charAt(0) === '@') {
-                result += selector + '{' + scopeCss(body, uid) + '}';
+                var atName = selector.split(/[\s(]/)[0];
+                var containerAtRules = { '@media': 1, '@supports': 1, '@container': 1, '@layer': 1 };
+                if (containerAtRules[atName]) {
+                    result += selector + '{' + scopeCss(body, uid) + '}';
+                } else {
+                    result += selector + '{' + body + '}';
+                }
             } else {
                 var sels = selector.split(',').map(function (s) {
                     return prefix + ' ' + s.trim();
