@@ -923,7 +923,7 @@
         '--snw-border:rgba(0,0,0,.14);--snw-link:var(--snw-accent);',
         '--snw-radius:8px;--snw-gap:16px;--snw-pad:14px;--snw-font:inherit;',
         'box-sizing:border-box;color:var(--snw-text);font-family:var(--snw-font);',
-        'width:100%;container-type:inline-size;line-height:1.5;}',
+        'width:100%;container-type:inline-size;line-height:1.5;font-size:clamp(14px,1em,16px);}',
         '.steigerwald-news-widget *,.steigerwald-news-widget *::before,.steigerwald-news-widget *::after{box-sizing:border-box;}',
         '.steigerwald-news-widget .snw-root{background:var(--snw-bg);color:var(--snw-text);padding:var(--snw-pad);border-radius:var(--snw-radius);}',
         '.steigerwald-news-widget .snw-heading{margin:0 0 14px;padding:0 0 8px;border-bottom:2px solid var(--snw-accent);color:inherit;font:inherit;font-size:1.25em;font-weight:700;line-height:1.25;}',

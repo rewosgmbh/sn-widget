@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.3.1
 
 **Bugfixes:**
 
 * „Seite erstellen/aktualisieren" benennt die vorhandene Erstellseite jetzt korrekt um, wenn die Adresse geändert wird (zuvor wurde eine Slug-Änderung ignoriert, solange die Seite bereits existierte).
+* Widget skaliert nicht mehr mit der Basis-Schriftgröße der einbettenden Seite: die Darstellung war auf Websites mit großer Basisschrift „insane" vergrößert. Die Widget-Wurzel hat jetzt eine begrenzte Basisgröße (`clamp(14px, 1em, 16px)`), sodass Titel und Inhalte konsistent bleiben.
 
 ## 1.3.0
 

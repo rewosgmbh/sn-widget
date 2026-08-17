@@ -24,6 +24,9 @@
     width: 100%;
     container-type: inline-size;
     line-height: 1.5;
+    /* Controlled base size: follow the host down to 14px but never scale
+       into "zoomed" territory on sites with a large base font. */
+    font-size: clamp(14px, 1em, 16px);
 }
 
 .steigerwald-news-widget *,
