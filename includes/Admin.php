@@ -389,9 +389,17 @@ class SNW_Admin {
                 <h3><?php echo esc_html__( 'Kategorie & Schlagwörter', 'steigerwald-news-widget' ); ?></h3>
                 <p><?php echo esc_html__( 'Du wählst Kategorien und Schlagwörter bequem aus der Liste – Slugs musst du nicht kennen. Das Widget filtert die passenden Beiträge automatisch.', 'steigerwald-news-widget' ); ?></p>
                 <h3><?php echo esc_html__( 'Preset vs. Einbettungscode', 'steigerwald-news-widget' ); ?></h3>
-                <p><?php echo esc_html__( 'Ein Preset ist deine gespeicherte Konfiguration im WordPress-Backend. Der Einbettungscode ist der HTML-Schnipsel, den du auf der Partnerseite einfügst. Ein Preset kannst du beliebig oft als Code exportieren.', 'steigerwald-news-widget' ); ?></p>
-            </details>
-        </div>
+             <p><?php echo esc_html__( 'Ein Preset ist deine gespeicherte Konfiguration im WordPress-Backend. Der Einbettungscode ist der HTML-Schnipsel, den du auf der Partnerseite einfügst. Ein Preset kannst du beliebig oft als Code exportieren.', 'steigerwald-news-widget' ); ?></p>
+             </details>
+             <p class="description" style="margin-top: 24px;">
+                 <?php
+                 printf(
+                     esc_html__( 'Build with %s', 'steigerwald-news-widget' ),
+                     '<a href="' . esc_url( 'https://ottili.one/coder' ) . '" target="_blank" rel="noopener">Ottili Coder</a>'
+                 );
+                 ?>
+             </p>
+         </div>
         <?php
     }
 
