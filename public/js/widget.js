@@ -710,10 +710,7 @@
         applyDesign(root, el, config);
 
         if (config.title) {
-            var heading = document.createElement('h2');
-            heading.className = 'snw-heading';
-            heading.textContent = config.title;
-            root.appendChild(heading);
+            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title));
         }
 
         if (!posts.length) {
@@ -764,10 +761,7 @@
         root.className = 'snw-root';
         applyDesign(root, el, config);
         if (config.title) {
-            var heading = document.createElement('h2');
-            heading.className = 'snw-heading';
-            heading.textContent = config.title;
-            root.appendChild(heading);
+            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title));
         }
         var err = document.createElement('p');
         err.className = 'snw-state snw-error';

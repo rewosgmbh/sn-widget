@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+**Bugfixes:**
+
+* Widget-Titel respektiert jetzt die eingestellte Überschriften-Ebene (`design.heading_level`, h2/h3/h4). Zuvor wurde der Titel immer als `<h2>` gerendert, unabhängig von der Konfiguration.
+
 ## 1.3.1
 
 **Bugfixes:**
