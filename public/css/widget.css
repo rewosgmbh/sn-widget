@@ -22,6 +22,7 @@
     color: var(--snw-text);
     font-family: var(--snw-font);
     width: 100%;
+    max-width: none !important;
     container-type: inline-size;
     line-height: 1.5;
     /* Controlled base size: follow the host down to 14px but never scale

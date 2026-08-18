@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SNW_VERSION', '1.4.1' );
+define( 'SNW_VERSION', '1.4.2' );
 define( 'SNW_FILE', __FILE__ );
 define( 'SNW_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNW_URL', plugin_dir_url( __FILE__ ) );

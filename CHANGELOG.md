@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2
+
+**Bugfix:**
+
+* Widget nutzte nicht die volle Breite des Containers, sondern wurde vom Theme auf die "Content-Size" (z. B. 645 px) begrenzt. `.steigerwald-news-widget` erhält jetzt `max-width: none !important`, sodass es die verfügbare Breite füllt (responsive Spaltenregeln bleiben unberührt).
+
 ## 1.4.1
 
 **Bugfix:**
