@@ -16,6 +16,18 @@
     function $(sel, ctx) { return (ctx || document).querySelector(sel); }
     function $all(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
 
+    // Safe field access: returns a default when the element is absent
+    // (the advanced/internal fields are hidden on the public builder).
+    function val(sel, def) {
+        var el = $(sel);
+        if (!el) { return (def === undefined ? '' : def); }
+        return el.value;
+    }
+    function setVal(sel, v) {
+        var el = $(sel);
+        if (el) { el.value = (v === undefined || v === null) ? '' : v; }
+    }
+
     function clamp(v, min, max) {
         v = parseInt(v, 10);
         if (isNaN(v)) { return min; }
@@ -100,17 +112,17 @@
 
         return {
             v: 1,
-            api: ($('#snw-api').value || '').trim() || L.apiBase,
-            source_name: ($('#snw-source-name').value || '').trim() || L.sourceName,
-            source_url: ($('#snw-source-url').value || '').trim() || L.sourceUrl,
-            widget_id: ($('#snw-widget-id').value || '').trim(),
+            api: (val('#snw-api') || '').trim() || L.apiBase,
+            source_name: (val('#snw-source-name') || '').trim() || L.sourceName,
+            source_url: (val('#snw-source-url') || '').trim() || L.sourceUrl,
+            widget_id: (val('#snw-widget-id') || '').trim(),
             partner: ($('#snw-partner').value || '').trim(),
             title: ($('#snw-title').value || '').trim(),
             mode: mode,
             category: category,
             tags: tags,
             include: include,
-            exclude: parseIdList($('#snw-exclude').value),
+            exclude: parseIdList(val('#snw-exclude')),
             pinned: pinned,
             auto_count: clamp($('#snw-auto-count').value, 0, 20),
             limit: clamp($('#snw-limit').value, 1, 20),
@@ -201,12 +213,12 @@
         $('#snw-empty-label').value = cfg.empty_label || '';
         $('#snw-error-label').value = cfg.error_label || '';
 
-        $('#snw-api').value = cfg.api || L.apiBase;
-        $('#snw-source-name').value = cfg.source_name || L.sourceName;
-        $('#snw-source-url').value = cfg.source_url || L.sourceUrl;
-        $('#snw-widget-id').value = cfg.widget_id || '';
+        setVal('#snw-api', cfg.api || L.apiBase);
+        setVal('#snw-source-name', cfg.source_name || L.sourceName);
+        setVal('#snw-source-url', cfg.source_url || L.sourceUrl);
+        setVal('#snw-widget-id', cfg.widget_id || '');
 
-        $('#snw-exclude').value = (cfg.exclude || []).join(',');
+        setVal('#snw-exclude', (cfg.exclude || []).join(','));
 
         var $cat = $('#snw-category');
         $cat.value = (cfg.category && cfg.category.length) ? String(cfg.category[0]) : '';
@@ -820,9 +832,12 @@
 
     function initBuilder() {
         loadCategories();
-        $('#snw-api').value = L.apiBase;
-        $('#snw-source-name').value = L.sourceName;
-        $('#snw-source-url').value = L.sourceUrl;
+        var apiEl = $('#snw-api');
+        if (apiEl) { apiEl.value = L.apiBase; }
+        var snEl = $('#snw-source-name');
+        if (snEl) { snEl.value = L.sourceName; }
+        var suEl = $('#snw-source-url');
+        if (suEl) { suEl.value = L.sourceUrl; }
 
         if (window.jQuery && jQuery.fn.wpColorPicker) {
             $all('.snw-color__input').forEach(function (el) {
@@ -926,6 +941,36 @@
         syncPicker('#snw-layout-picker', '.snw-layout-opt', 'data-layout', $('#snw-layout').value);
         syncPicker('#snw-theme-picker', '.snw-seg-opt', 'data-theme', $('#snw-theme').value);
         updatePreview();
+
+        // Public builder: emulate a bottom-docked live preview. Native
+        // `position: sticky; bottom` is unreliable in this theme (Chromium does
+        // not pin a bottom-sticky element inside the theme's flex/grid
+        // containers), so we use a top-sticky whose offset is
+        // (viewport height - preview height). That pins the widget's lower edge
+        // to the screen bottom, so it travels with the page until its bottom
+        // reaches the screen bottom, then stays put — no internal scrollbar.
+        if (!L.isAdmin) {
+            var b = document.querySelector('.snw-builder--public');
+            var preview = document.querySelector('.snw-builder--public .snw-builder__preview');
+            var applyFullBleed = function () {
+                if (!b) { return; }
+                var vw = window.innerWidth;
+                b.style.width = vw + 'px';
+                b.style.marginLeft = 'calc(50% - ' + (vw / 2) + 'px)';
+            };
+            var dockPreview = function () {
+                if (!preview) { return; }
+                var h = preview.getBoundingClientRect().height;
+                var vh = window.innerHeight;
+                preview.style.top = (vh - h) + 'px';
+            };
+            applyFullBleed();
+            dockPreview();
+            window.addEventListener('resize', function () { applyFullBleed(); dockPreview(); });
+            if (preview && window.ResizeObserver) {
+                new ResizeObserver(function () { dockPreview(); }).observe(preview);
+            }
+        }
     }
 
     function init() {

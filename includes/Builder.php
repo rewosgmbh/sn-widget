@@ -36,7 +36,7 @@ class SNW_Builder {
                     <a href="#snw-sec-content"><?php echo esc_html__( 'Inhalt', $t ); ?></a>
                     <a href="#snw-sec-design"><?php echo esc_html__( 'Design', $t ); ?></a>
                     <a href="#snw-sec-partner"><?php echo esc_html__( 'Partner', $t ); ?></a>
-                    <a href="#snw-sec-advanced"><?php echo esc_html__( 'Erweitert', $t ); ?></a>
+                    <?php if ( ! $is_public ) : ?><a href="#snw-sec-advanced"><?php echo esc_html__( 'Erweitert', $t ); ?></a><?php endif; ?>
                     <a href="#snw-sec-preview"><?php echo esc_html__( 'Vorschau', $t ); ?></a>
                 </nav>
                 <section class="snw-card" id="snw-sec-name">
@@ -291,7 +291,7 @@ class SNW_Builder {
                 <section class="snw-card" id="snw-sec-partner">
                     <h2><?php echo esc_html__( 'Partner & Tracking', $t ); ?></h2>
                     <label for="snw-partner"><?php echo esc_html__( 'Partnerkennung', $t ); ?></label>
-                    <input type="text" id="snw-partner" class="regular-text" placeholder="<?php echo esc_attr__( 'z. B. asv-sassanfahrt', $t ); ?>">
+                    <input type="text" id="snw-partner" class="regular-text" placeholder="<?php echo esc_attr__( 'z. B. mein-verein', $t ); ?>">
                     <p class="description">
                         <?php echo esc_html__( 'Dient ausschließlich dem UTM-Tracking der Artikellinks (utm_source). Optional.', $t ); ?>
                     </p>
@@ -334,6 +334,7 @@ class SNW_Builder {
                 </section>
                 <?php endif; ?>
 
+                <?php if ( ! $is_public ) : ?>
                 <details class="snw-card snw-advanced" id="snw-sec-advanced">
                     <summary><?php echo esc_html__( 'Erweiterte Einstellungen', $t ); ?></summary>
 
@@ -357,6 +358,7 @@ class SNW_Builder {
                         <textarea id="snw-raw" class="large-text code" rows="6" readonly></textarea>
                     </details>
                 </details>
+                <?php endif; ?>
 
                 <div class="snw-actions">
                     <?php if ( $is_public ) : ?>
@@ -372,24 +374,26 @@ class SNW_Builder {
 
             <!-- ============ Live preview column ============ -->
             <div class="snw-builder__preview" id="snw-sec-preview">
-                <h2>
-                    <?php echo esc_html__( 'Live-Vorschau', $t ); ?>
-                    <span class="snw-live-badge"><span class="snw-live-dot" aria-hidden="true"></span><?php echo esc_html__( 'Live', $t ); ?></span>
-                </h2>
-                <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation – Änderungen erscheinen sofort.', $t ); ?></p>
-                <div class="snw-preview-toolbar">
-                    <label for="snw-preview-width"><?php echo esc_html__( 'Vorschau-Breite', $t ); ?></label>
-                    <select id="snw-preview-width">
-                        <option value="100%"><?php echo esc_html__( 'Container (100%)', $t ); ?></option>
-                        <option value="320px">320 px</option>
-                        <option value="480px">480 px</option>
-                        <option value="768px"><?php echo esc_html__( '768 px (Tablet)', $t ); ?></option>
-                        <option value="1024px"><?php echo esc_html__( '1024 px (Desktop)', $t ); ?></option>
-                        <option value="1280px"><?php echo esc_html__( '1280 px (Breit)', $t ); ?></option>
-                    </select>
-                </div>
-                <div class="snw-preview-frame">
-                    <div id="snw-preview"></div>
+                <div class="snw-builder__preview-sticky">
+                    <h2>
+                        <?php echo esc_html__( 'Live-Vorschau', $t ); ?>
+                        <span class="snw-live-badge"><span class="snw-live-dot" aria-hidden="true"></span><?php echo esc_html__( 'Live', $t ); ?></span>
+                    </h2>
+                    <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation – Änderungen erscheinen sofort.', $t ); ?></p>
+                    <div class="snw-preview-toolbar">
+                        <label for="snw-preview-width"><?php echo esc_html__( 'Vorschau-Breite', $t ); ?></label>
+                        <select id="snw-preview-width">
+                            <option value="100%"><?php echo esc_html__( 'Container (100%)', $t ); ?></option>
+                            <option value="320px">320 px</option>
+                            <option value="480px">480 px</option>
+                            <option value="768px"><?php echo esc_html__( '768 px (Tablet)', $t ); ?></option>
+                            <option value="1024px"><?php echo esc_html__( '1024 px (Desktop)', $t ); ?></option>
+                            <option value="1280px"><?php echo esc_html__( '1280 px (Breit)', $t ); ?></option>
+                        </select>
+                    </div>
+                    <div class="snw-preview-frame">
+                        <div id="snw-preview"></div>
+                    </div>
                 </div>
             </div>
         </div>

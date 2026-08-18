@@ -19,9 +19,35 @@
     margin-top: 16px;
 }
 
+/* Public builder breaks out of the theme's content column to use the full
+   page width. The JS sets an exact innerWidth-based width to avoid the
+   100vw scrollbar overflow; this is the CSS fallback. */
+.snw-builder--public {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    box-sizing: border-box;
+    padding: 24px 32px;
+}
+
+/* Let position:sticky pin to the viewport on the public builder page. The
+   theme sets body{overflow:hidden} (both axes), which turns <body> into a
+   scroll container that is NOT the actual scroller (<html> is) and silently
+   breaks sticky. Resetting it lets <html> be the scroller. overflow-x: clip
+   still contains the full-bleed width without a horizontal scrollbar. */
+/* Match the theme's `body:not(.woocommerce-page).cm-normal-container` specificity
+   (it forces overflow:hidden, which breaks position:sticky) and override it so
+   <html> stays the scroller and the preview can pin to the viewport. */
+body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
+    overflow-x: clip;
+    overflow-y: visible;
+}
+
 @media (max-width: 900px) {
     .snw-builder {
         grid-template-columns: 1fr;
+    }
+    .snw-builder__preview {
+        position: static;
     }
 }
 
@@ -242,12 +268,40 @@
     line-height: 1;
 }
 
-/* Live preview */
+/* Live preview: pinned on the admin builder (theme-independent there). */
 .snw-builder__preview {
     position: sticky;
     top: 32px;
-    overflow-x: auto;
+    align-self: start;
 }
+
+/* Public builder: dock the live preview to the BOTTOM of the screen. Native
+   `position: sticky; bottom` is unreliable here — Chromium does not pin a
+   bottom-sticky element whose ancestors include the theme's flex/grid
+   containers — so we emulate it with a top-sticky whose offset equals
+   (viewport height - preview height). The widget then travels with the page
+   as you scroll down until its lower end reaches the screen bottom, then stays
+   pinned there — no internal scrollbar. admin.js computes and sets the exact
+   `top` offset (it changes with the live preview's height). Admin keeps the
+   plain top pin. */
+.snw-builder--public .snw-builder__preview {
+    top: 0;
+}
+.snw-builder--public .snw-builder__preview-sticky {
+    position: static;
+}
+
+/* The preview is a plain sticky sidebar (docked to the screen) with its
+   NATURAL height — it is exactly as tall as the live widget. There is NO
+   internal scroll area: when the widget fits the screen it shows fully, and
+   when it is taller the column simply scrolls with the page while the preview
+   stays pinned (like the admin dashboard). No cramped scroll boxes. */
+
+/* Public builder: behaves like the admin dashboard — the page scrolls
+   normally and the preview column is sticky (pinned) so you don't lose it
+   while configuring. The preview frame itself scrolls internally when its
+   content is taller than the viewport (its "own scroll area"). No cramped
+   two-pane boxes. */
 
 .snw-preview-toolbar {
     display: flex;

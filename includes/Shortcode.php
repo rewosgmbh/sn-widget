@@ -29,6 +29,30 @@ class SNW_Shortcode {
     public static function init() {
         add_shortcode( 'steigerwald_news_widget', array( __CLASS__, 'render_widget' ) );
         add_shortcode( 'steigerwald_news_widget_builder', array( __CLASS__, 'render_builder' ) );
+        add_action( 'wp', array( __CLASS__, 'maybe_builder_body_class' ) );
+    }
+
+    /**
+     * Add a body class on pages that contain the public builder shortcode so the
+     * full-bleed layout can clip any scrollbar-induced horizontal overflow.
+     * Registered on `wp` (before the header) so it applies in time.
+     *
+     * @return void
+     */
+    public static function maybe_builder_body_class() {
+        if ( ! is_singular() ) {
+            return;
+        }
+        $post = get_post();
+        if ( $post && has_shortcode( $post->post_content, 'steigerwald_news_widget_builder' ) ) {
+            add_filter(
+                'body_class',
+                function ( $classes ) {
+                    $classes[] = 'snw-builder-page';
+                    return $classes;
+                }
+            );
+        }
     }
 
     /**

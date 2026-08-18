@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.1
+
+**Public Builder – Layout & Live-Vorschau verfeinert:**
+
+* **Full-Page-Width:** Der öffentliche Builder bricht aus der Theme-Inhaltsspalte aus und nutzt die volle Seitenbreite (kein horizontaler Scrollbalken, `body.snw-builder-page` clippt Overflow).
+* **Interne Felder ausgeblendet:** Im Public-Kontext werden der „Erweitert"-Abschnitt und dessen Navigationslink nicht gerendert.
+* **Bottom-gedockte Live-Vorschau:** Die Vorschau wandert beim Runterscrollen mit der Seite, bis ihr unteres Ende den Bildschirmrand erreicht, und bleibt dann unten angedockt – ohne eigenen Scrollbalken. (Native `position: sticky; bottom` klebt im Theme nicht zuverlässig, daher wird sie über einen `top`-Sticky mit dynamischem Offset `viewportHöhe − Vorschaulänge` emuliert; `admin.js` berechnet den Offset und aktualisiert ihn über einen `ResizeObserver`.)
+* Der Platzhalter im Embed-Beispiel heißt jetzt `mein-verein` (statt des irritierenden Testwerts).
+
 ## 1.5.0
 
 **Öffentliches Widget-Erstellen mit vollem Funktionsumfang:**
