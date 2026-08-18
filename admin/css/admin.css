@@ -12,6 +12,8 @@
 }
 
 .snw-builder {
+    --snw-bottom-gap: 24px;
+    position: relative;
     display: grid;
     grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.3fr);
     gap: 24px;
@@ -46,14 +48,6 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     .snw-builder {
         grid-template-columns: 1fr;
     }
-    .snw-builder__preview {
-        position: static;
-    }
-}
-
-.snw-builder__config {
-    display: grid;
-    gap: 16px;
 }
 
 .snw-card {
@@ -268,27 +262,44 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     line-height: 1;
 }
 
-/* Live preview: pinned on the admin builder (theme-independent there). */
-.snw-builder__preview {
-    position: sticky;
-    top: 32px;
-    align-self: start;
+/* Editor (left): normal document flow. It is the taller column and simply
+   scrolls with the page — no sticky, no internal scroll surface of its own. */
+.snw-builder__config {
+    display: grid;
+    gap: 16px;
 }
 
-/* Public builder: dock the live preview to the BOTTOM of the screen. Native
-   `position: sticky; bottom` is unreliable here — Chromium does not pin a
-   bottom-sticky element whose ancestors include the theme's flex/grid
-   containers — so we emulate it with a top-sticky whose offset equals
-   (viewport height - preview height). The widget then travels with the page
-   as you scroll down until its lower end reaches the screen bottom, then stays
-   pinned there — no internal scrollbar. admin.js computes and sets the exact
-   `top` offset (it changes with the live preview's height). Admin keeps the
-   plain top pin. */
-.snw-builder--public .snw-builder__preview {
-    top: 0;
+/* Preview (right): a smart sticky sidebar. It flows with the page and scrolls
+   together with the editor until its lower edge reaches the bottom of the
+   viewport; it then docks there and stays visible while the taller editor
+   continues. Scrolling back up releases it so it travels up with the content
+   again. There is ONE page scrollbar; the preview panel itself moves relative
+   to the viewport and its content never scrolls internally. Native
+   position:sticky;bottom is unreliable in this theme, so admin.js sets the
+   emulated top offset (viewport height - preview height - gap). --snw-bottom-gap
+   reserves viewport spacing so the docked panel does not sit flush to the edge. */
+.snw-builder__preview {
+    position: sticky;
+    align-self: start;
 }
-.snw-builder--public .snw-builder__preview-sticky {
-    position: static;
+.snw-preview-head {
+    padding: 0 0 8px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+/* On small screens the two columns stack. Drop the sticky/scroll-cap so the
+   workspace flows naturally instead of forcing a 50/50 pinned layout. */
+@media (max-width: 900px) {
+    .snw-builder__config,
+    .snw-builder__preview {
+        position: static;
+        max-height: none;
+        overflow: visible;
+    }
+    .snw-preview-head {
+        position: static;
+        border-bottom: 0;
+    }
 }
 
 /* The preview is a plain sticky sidebar (docked to the screen) with its

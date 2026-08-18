@@ -374,7 +374,7 @@ class SNW_Builder {
 
             <!-- ============ Live preview column ============ -->
             <div class="snw-builder__preview" id="snw-sec-preview">
-                <div class="snw-builder__preview-sticky">
+                <div class="snw-preview-head">
                     <h2>
                         <?php echo esc_html__( 'Live-Vorschau', $t ); ?>
                         <span class="snw-live-badge"><span class="snw-live-dot" aria-hidden="true"></span><?php echo esc_html__( 'Live', $t ); ?></span>
@@ -391,6 +391,8 @@ class SNW_Builder {
                             <option value="1280px"><?php echo esc_html__( '1280 px (Breit)', $t ); ?></option>
                         </select>
                     </div>
+                </div>
+                <div class="snw-preview-body">
                     <div class="snw-preview-frame">
                         <div id="snw-preview"></div>
                     </div>

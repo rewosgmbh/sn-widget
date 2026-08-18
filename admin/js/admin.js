@@ -942,33 +942,168 @@
         syncPicker('#snw-theme-picker', '.snw-seg-opt', 'data-theme', $('#snw-theme').value);
         updatePreview();
 
-        // Public builder: emulate a bottom-docked live preview. Native
-        // `position: sticky; bottom` is unreliable in this theme (Chromium does
-        // not pin a bottom-sticky element inside the theme's flex/grid
-        // containers), so we use a top-sticky whose offset is
-        // (viewport height - preview height). That pins the widget's lower edge
-        // to the screen bottom, so it travels with the page until its bottom
-        // reaches the screen bottom, then stays put — no internal scrollbar.
+        // Public builder: keep the builder full-bleed.
         if (!L.isAdmin) {
             var b = document.querySelector('.snw-builder--public');
-            var preview = document.querySelector('.snw-builder--public .snw-builder__preview');
             var applyFullBleed = function () {
                 if (!b) { return; }
                 var vw = window.innerWidth;
                 b.style.width = vw + 'px';
                 b.style.marginLeft = 'calc(50% - ' + (vw / 2) + 'px)';
             };
-            var dockPreview = function () {
-                if (!preview) { return; }
-                var h = preview.getBoundingClientRect().height;
-                var vh = window.innerHeight;
-                preview.style.top = (vh - h) + 'px';
-            };
             applyFullBleed();
-            dockPreview();
-            window.addEventListener('resize', function () { applyFullBleed(); dockPreview(); });
-            if (preview && window.ResizeObserver) {
-                new ResizeObserver(function () { dockPreview(); }).observe(preview);
+            window.addEventListener('resize', applyFullBleed);
+        }
+
+        // --- Direction-aware sticky Live Preview (right column). ---
+        // The editor (left) is normal document flow and scrolls with the page.
+        // The preview has three states:
+        //   * FREE: in normal flow, moving with the page.
+        //   * BOTTOM: docked to the bottom of the viewport while scrolling down
+        //     (so the taller editor can keep scrolling while the preview stays
+        //     visible).
+        //   * TOP: docked to the top of the viewport once the preview reaches it.
+        // A transition never moves the panel by itself: when leaving a docked
+        // state the CURRENT visual Y is captured and converted into a
+        // container-relative (absolute) position, so the panel stays exactly
+        // where it is and then travels with the page. It only re-docks when it
+        // physically reaches a viewport edge (within a small threshold, so the
+        // dock itself is jump-free). There is one page scrollbar; the panel moves
+        // relative to the viewport, its content never scrolls internally — no
+        // editor->preview sync and no preview scrollbar.
+        var workspace = document.querySelector('.snw-builder');
+        var preview = document.querySelector('.snw-builder__preview');
+        if (workspace && preview) {
+            var bottomGap = parseInt(
+                getComputedStyle(workspace).getPropertyValue('--snw-bottom-gap'), 10
+            ) || 24;
+            var topGap = L.isAdmin ? 32 : 0;
+            var PIN_THRESHOLD = 150; // dock only when within this of an edge
+            var state = 'free'; // 'free' | 'bottom' | 'top'
+            var lastY = window.scrollY;
+            var raf = 0;
+            var isDesktop = function () { return window.innerWidth > 900; };
+
+            var previewHeight = function () { return preview.getBoundingClientRect().height; };
+
+            // BOTTOM dock (seen while scrolling down).
+            var pinBottom = function () {
+                var h = previewHeight();
+                var vh = window.innerHeight;
+                preview.style.position = 'sticky';
+                preview.style.top = (vh - h - bottomGap) + 'px';
+                preview.style.bottom = 'auto';
+                preview.style.left = '';
+                preview.style.width = '';
+                preview.style.transform = '';
+                state = 'bottom';
+            };
+
+            // TOP dock (seen once the preview reaches the top edge).
+            var pinTop = function () {
+                preview.style.position = 'sticky';
+                preview.style.top = topGap + 'px';
+                preview.style.bottom = 'auto';
+                preview.style.left = '';
+                preview.style.width = '';
+                preview.style.transform = '';
+                state = 'top';
+            };
+
+            // Release into a FREE, container-relative state while preserving the
+            // exact current visual Y (so the transition itself never moves it).
+            var releaseToFree = function () {
+                var rect = preview.getBoundingClientRect();
+                var parentRect = workspace.getBoundingClientRect();
+                preview.style.position = 'absolute';
+                preview.style.top = (rect.top - parentRect.top) + 'px';
+                preview.style.left = (rect.left - parentRect.left) + 'px';
+                preview.style.width = rect.width + 'px';
+                preview.style.bottom = 'auto';
+                preview.style.transform = '';
+                state = 'free';
+            };
+
+            var update = function () {
+                raf = 0;
+                var y = window.scrollY;
+                if (y === lastY) { return; }
+                var direction = y > lastY ? 'down' : 'up';
+                lastY = y;
+
+                if (state === 'bottom') {
+                    if (direction === 'up') { releaseToFree(); }
+                } else if (state === 'top') {
+                    if (direction === 'down') { releaseToFree(); }
+                } else { // free
+                    var rect = preview.getBoundingClientRect();
+                    var vh = window.innerHeight;
+                    // Directional: scrolling DOWN pins at the bottom edge,
+                    // scrolling UP pins at the top edge — matching the user's
+                    // state machine (never the opposite edge, which would read
+                    // as a teleport).
+                    if (direction === 'down' &&
+                        rect.bottom <= vh - bottomGap &&
+                        (vh - bottomGap) - rect.bottom <= PIN_THRESHOLD) {
+                        pinBottom();
+                    } else if (direction === 'up' &&
+                        rect.top <= topGap &&
+                        topGap - rect.top <= PIN_THRESHOLD) {
+                        pinTop();
+                    }
+                }
+            };
+
+            var onScroll = function () {
+                if (!isDesktop()) {
+                    // Mobile: stacked layout. Clear any inline position so the
+                    // static media-query rule applies.
+                    if (preview.style.position !== '') {
+                        preview.style.position = '';
+                        preview.style.top = '';
+                        preview.style.left = '';
+                        preview.style.width = '';
+                        preview.style.transform = '';
+                    }
+                    return;
+                }
+                if (!raf) { raf = window.requestAnimationFrame(update); }
+            };
+
+            // Start in natural flow; scrolling pins at the edges (desktop only).
+            if (isDesktop()) {
+                preview.style.position = 'sticky';
+                preview.style.top = '';
+                preview.style.bottom = '';
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', function () {
+                if (!isDesktop()) {
+                    state = 'free';
+                    preview.style.position = '';
+                    preview.style.top = '';
+                    preview.style.left = '';
+                    preview.style.width = '';
+                    preview.style.transform = '';
+                    return;
+                }
+                if (state === 'bottom') { pinBottom(); }
+                else if (state === 'top') { pinTop(); }
+                // free: stays in natural flow, nothing to recompute
+            });
+            if (window.ResizeObserver) {
+                new ResizeObserver(function () {
+                    if (!isDesktop()) { return; }
+                    if (state === 'bottom') { pinBottom(); }
+                    else if (state === 'top') { pinTop(); }
+                }).observe(preview);
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(function () {
+                    if (!isDesktop()) { return; }
+                    if (state === 'bottom') { pinBottom(); }
+                    else if (state === 'top') { pinTop(); }
+                });
             }
         }
     }
