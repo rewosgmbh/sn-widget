@@ -223,6 +223,7 @@
         }
 
         applyModeVisibility();
+        updateModeHint();
         updatePreview();
         hydratePreset(cfg);
     }
@@ -252,6 +253,21 @@
             var showLayout = !layouts[0] || layouts.indexOf(layout) !== -1;
             el.style.display = (showMode && showLayout) ? '' : 'none';
         });
+    }
+
+    var MODE_HINTS = {
+        latest:        'Zeigt automatisch deine neuesten Beiträge.',
+        category:      'Nur Beiträge aus einer gewählten Kategorie.',
+        tags:          'Beiträge, die mindestens ein ausgewähltes Schlagwort tragen.',
+        category_tags: 'Kategorie und Schlagwörter kombiniert.',
+        manual:        'Du wählst die Beiträge einzeln – in genau dieser Reihenfolge.',
+        hybrid:        'Feste, angeheftete Beiträge oben, darunter automatische.'
+    };
+
+    function updateModeHint() {
+        var hint = $('#snw-mode-hint');
+        if (!hint) { return; }
+        hint.textContent = MODE_HINTS[$('#snw-mode').value] || '';
     }
 
     // ------------------------------------------------------------------
@@ -740,8 +756,10 @@
             applyPreviewWidth();
         }
 
-        $('#snw-mode').addEventListener('change', function () { applyModeVisibility(); updatePreview(); });
-        $('#snw-layout').addEventListener('change', function () { applyModeVisibility(); updatePreview(); });
+        $('#snw-mode').addEventListener('change', function () { applyModeVisibility(); updateModeHint(); updatePreview(); });
+        $('#snw-layout').addEventListener('change', function () {         applyModeVisibility();
+        updateModeHint();
+        updatePreview(); });
         $('#snw-teaser').addEventListener('input', function () { var o = $('#snw-teaser-out'); if (o) { o.textContent = this.value; } });
 
         var tagInput = $('#snw-tag-search');
@@ -793,6 +811,7 @@
         if (createBtn) { createBtn.addEventListener('click', createPage); }
 
         applyModeVisibility();
+        updateModeHint();
         updatePreview();
         loadPresets();
     }

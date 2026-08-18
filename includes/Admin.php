@@ -51,11 +51,23 @@ class SNW_Admin {
             <p class="snw-intro">
                 <?php echo esc_html__( 'Erstelle extern einbettbare Nachrichten-Widgets aus deinen WordPress-Beiträgen. Das Widget nutzt ausschließlich die vorhandene WordPress-REST-API – es wird kein eigener Endpunkt registriert.', 'steigerwald-news-widget' ); ?>
             </p>
+            <p class="snw-steps">
+                <strong><?php echo esc_html__( 'So geht’s:', 'steigerwald-news-widget' ); ?></strong>
+                <?php echo esc_html__( '1) Inhalt & Modus wählen · 2) Design anpassen (Vorschau rechts) · 3) Speichern & Einbettungscode kopieren.', 'steigerwald-news-widget' ); ?>
+            </p>
 
             <div class="snw-builder">
                 <!-- ============ Configuration column ============ -->
                 <form id="snw-builder-form" class="snw-builder__config" autocomplete="off">
-                    <section class="snw-card">
+                    <nav class="snw-section-nav" aria-label="<?php echo esc_attr__( 'Abschnitte', 'steigerwald-news-widget' ); ?>">
+                        <a href="#snw-sec-name"><?php echo esc_html__( 'Name', 'steigerwald-news-widget' ); ?></a>
+                        <a href="#snw-sec-content"><?php echo esc_html__( 'Inhalt', 'steigerwald-news-widget' ); ?></a>
+                        <a href="#snw-sec-design"><?php echo esc_html__( 'Design', 'steigerwald-news-widget' ); ?></a>
+                        <a href="#snw-sec-partner"><?php echo esc_html__( 'Partner', 'steigerwald-news-widget' ); ?></a>
+                        <a href="#snw-sec-advanced"><?php echo esc_html__( 'Erweitert', 'steigerwald-news-widget' ); ?></a>
+                        <a href="#snw-sec-preview"><?php echo esc_html__( 'Vorschau', 'steigerwald-news-widget' ); ?></a>
+                    </nav>
+                    <section class="snw-card" id="snw-sec-name">
                         <h2><?php echo esc_html__( 'Widget-Name', 'steigerwald-news-widget' ); ?></h2>
                         <p class="description">
                             <?php echo esc_html__( 'Interner Name zur Verwaltung gespeicherter Widgets. Erscheint nicht öffentlich.', 'steigerwald-news-widget' ); ?>
@@ -64,7 +76,7 @@ class SNW_Admin {
                         <input type="text" id="snw-name" class="regular-text" maxlength="80" placeholder="<?php echo esc_attr__( 'z. B. Vereinswidget Standard', 'steigerwald-news-widget' ); ?>">
                     </section>
 
-                    <section class="snw-card">
+                    <section class="snw-card" id="snw-sec-content">
                         <h2><?php echo esc_html__( 'Inhalt', 'steigerwald-news-widget' ); ?></h2>
 
                         <label for="snw-mode"><?php echo esc_html__( 'Inhaltsmodus', 'steigerwald-news-widget' ); ?></label>
@@ -76,6 +88,7 @@ class SNW_Admin {
                             <option value="manual"><?php echo esc_html__( 'Einzelne Beiträge', 'steigerwald-news-widget' ); ?></option>
                             <option value="hybrid"><?php echo esc_html__( 'Hybrid (Angeheftet + Automatisch)', 'steigerwald-news-widget' ); ?></option>
                         </select>
+                        <p class="snw-mode-hint" id="snw-mode-hint"></p>
 
                         <div class="snw-cond" data-show-modes="category,category_tags,hybrid">
                             <label for="snw-category"><?php echo esc_html__( 'Kategorie', 'steigerwald-news-widget' ); ?></label>
@@ -120,7 +133,7 @@ class SNW_Admin {
                         </select>
                     </section>
 
-                    <section class="snw-card">
+                    <section class="snw-card" id="snw-sec-design">
                         <h2><?php echo esc_html__( 'Design', 'steigerwald-news-widget' ); ?></h2>
 
                         <label for="snw-layout"><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
@@ -165,6 +178,7 @@ class SNW_Admin {
                             <option value="12">12</option>
                             <option value="16">16</option>
                         </select>
+                        <p class="snw-field-hint"><?php echo esc_html__( 'Rundung der Ecken (0 = eckig).', 'steigerwald-news-widget' ); ?></p>
 
                         <label for="snw-spacing"><?php echo esc_html__( 'Abstand', 'steigerwald-news-widget' ); ?></label>
                         <select id="snw-spacing">
@@ -183,8 +197,8 @@ class SNW_Admin {
                             <option value="sans"><?php echo esc_html__( 'Sans Serif', 'steigerwald-news-widget' ); ?></option>
                         </select>
 
-                        <fieldset class="snw-fieldset">
-                            <legend><?php echo esc_html__( 'Bild & Layout', 'steigerwald-news-widget' ); ?></legend>
+                        <details class="snw-fieldset" open>
+                            <summary><?php echo esc_html__( 'Bild & Layout', 'steigerwald-news-widget' ); ?></summary>
 
                             <label for="snw-columns"><?php echo esc_html__( 'Artikel pro Reihe', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-columns">
@@ -193,6 +207,7 @@ class SNW_Admin {
                                 <option value="3">3</option>
                                 <option value="4">4</option>
                             </select>
+                            <p class="snw-field-hint"><?php echo esc_html__( 'Wirkt bei Layout „Raster“ und „Karten“.', 'steigerwald-news-widget' ); ?></p>
 
                             <label for="snw-image-ratio"><?php echo esc_html__( 'Bildseitenverhältnis', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-image-ratio">
@@ -217,10 +232,10 @@ class SNW_Admin {
                                     <option value="top"><?php echo esc_html__( 'Oben', 'steigerwald-news-widget' ); ?></option>
                                 </select>
                             </div>
-                        </fieldset>
+                        </details>
 
-                        <fieldset class="snw-fieldset">
-                            <legend><?php echo esc_html__( 'Text & Meta', 'steigerwald-news-widget' ); ?></legend>
+                        <details class="snw-fieldset" open>
+                            <summary><?php echo esc_html__( 'Text & Meta', 'steigerwald-news-widget' ); ?></summary>
 
                             <label for="snw-date-format"><?php echo esc_html__( 'Datumsformat', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-date-format">
@@ -237,10 +252,10 @@ class SNW_Admin {
 
                             <label for="snw-title-length"><?php echo esc_html__( 'Titel-Kürzung (Zeichen, 0 = aus)', 'steigerwald-news-widget' ); ?></label>
                             <input type="number" id="snw-title-length" min="0" max="200" value="0">
-                        </fieldset>
+                        </details>
 
-                        <fieldset class="snw-fieldset">
-                            <legend><?php echo esc_html__( 'Theme & Stil', 'steigerwald-news-widget' ); ?></legend>
+                        <details class="snw-fieldset" open>
+                            <summary><?php echo esc_html__( 'Theme & Stil', 'steigerwald-news-widget' ); ?></summary>
 
                             <label for="snw-theme"><?php echo esc_html__( 'Farbschema', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-theme">
@@ -274,7 +289,7 @@ class SNW_Admin {
                                 <option value="title" selected><?php echo esc_html__( 'Nur Titel', 'steigerwald-news-widget' ); ?></option>
                                 <option value="card"><?php echo esc_html__( 'Ganze Karte', 'steigerwald-news-widget' ); ?></option>
                             </select>
-                        </fieldset>
+                        </details>
 
                         <details class="snw-card snw-customcss">
                             <summary><?php echo esc_html__( 'Eigenes CSS (Profis)', 'steigerwald-news-widget' ); ?></summary>
@@ -284,7 +299,7 @@ class SNW_Admin {
                         </details>
                     </section>
 
-                    <section class="snw-card">
+                    <section class="snw-card" id="snw-sec-partner">
                         <h2><?php echo esc_html__( 'Partner & Tracking', 'steigerwald-news-widget' ); ?></h2>
                         <label for="snw-partner"><?php echo esc_html__( 'Partnerkennung', 'steigerwald-news-widget' ); ?></label>
                         <input type="text" id="snw-partner" class="regular-text" placeholder="<?php echo esc_attr__( 'z. B. asv-sassanfahrt', 'steigerwald-news-widget' ); ?>">
@@ -314,7 +329,7 @@ class SNW_Admin {
                         <input type="text" id="snw-error-label" class="regular-text" maxlength="160" placeholder="<?php echo esc_attr__( 'Die Nachrichten konnten gerade nicht geladen werden.', 'steigerwald-news-widget' ); ?>">
                     </section>
 
-                    <details class="snw-card snw-advanced">
+                    <details class="snw-card snw-advanced" id="snw-sec-advanced">
                         <summary><?php echo esc_html__( 'Erweiterte Einstellungen', 'steigerwald-news-widget' ); ?></summary>
 
                         <label for="snw-api"><?php echo esc_html__( 'API-Basis (Quelle)', 'steigerwald-news-widget' ); ?></label>
@@ -347,7 +362,7 @@ class SNW_Admin {
                 </form>
 
                 <!-- ============ Live preview column ============ -->
-                <div class="snw-builder__preview">
+                <div class="snw-builder__preview" id="snw-sec-preview">
                     <h2><?php echo esc_html__( 'Live-Vorschau', 'steigerwald-news-widget' ); ?></h2>
                     <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation.', 'steigerwald-news-widget' ); ?></p>
                     <div class="snw-preview-toolbar">

@@ -299,3 +299,115 @@
     cursor: pointer;
     font-weight: 600;
 }
+
+/* Orientation steps under the intro */
+.snw-steps {
+    max-width: 720px;
+    margin: 8px 0 0;
+    padding: 10px 14px;
+    background: #fff;
+    border-left: 4px solid #c59a20;
+    border-radius: 2px;
+    color: #1d2327;
+    font-size: 13px;
+}
+
+/* In-page section navigation (sticky) */
+.snw-section-nav {
+    position: sticky;
+    top: 32px;
+    z-index: 6;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.snw-section-nav a {
+    display: inline-block;
+    padding: 4px 11px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    color: #1d2327;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.snw-section-nav a:hover,
+.snw-section-nav a:focus {
+    background: #007cba;
+    border-color: #007cba;
+    color: #fff;
+}
+
+.snw-card,
+.snw-builder__preview {
+    scroll-margin-top: 48px;
+}
+
+.snw-builder {
+    scroll-behavior: smooth;
+}
+
+/* Inline hints */
+.snw-mode-hint,
+.snw-field-hint {
+    margin: 6px 0 0;
+    color: #646970;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* Collapsible design sub-sections */
+.snw-fieldset {
+    border: 0;
+    border-top: 1px solid #c3c4c7;
+    margin: 14px 0 0;
+    padding: 0;
+}
+
+.snw-fieldset > summary {
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+.snw-fieldset > summary::-webkit-details-marker {
+    display: none;
+}
+
+.snw-fieldset > summary::before {
+    content: "\25BE";
+    margin-right: 8px;
+    transition: transform .15s ease;
+}
+
+.snw-fieldset:not([open]) > summary::before {
+    transform: rotate(-90deg);
+}
+
+/* Sticky save / action bar */
+.snw-actions {
+    position: sticky;
+    bottom: 12px;
+    z-index: 6;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .10);
+}

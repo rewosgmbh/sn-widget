@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.5
+
+**Admin – Bedienung & Übersicht:**
+
+* **Abschnitts-Navigation** oben in der Konfigurationsspalte (Name, Inhalt, Design, Partner, Erweitert, Vorschau) – bleibt beim Scrollen stehen und springt zum gewählten Bereich.
+* **3-Schritte-Hinweis** direkt unter der Einleitung (Inhalt → Design → Speichern/Einbetten).
+* **Dynamischer Modus-Hinweis** unter „Inhaltsmodus“: erklärt die jeweils gewählte Modus-Option in einem Satz.
+* **Einklappbare Design-Unterbereiche** (Bild & Layout, Text & Meta, Theme & Stil) mit Aufklapp-Indikator – weniger Bildschirm voll Controls.
+* **Kleine Feld-Hinweise** bei „Artikel pro Reihe“ (wirkt bei Raster/Karten) und „Eckenradius“.
+* **Speichern-Leiste** wird beim Scrollen am unteren Rand fixiert, sodass „Widget speichern“ immer erreichbar ist.
+
 ## 1.4.4
 
 **Admin:**
