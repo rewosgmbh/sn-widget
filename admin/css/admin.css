@@ -76,6 +76,7 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 
 .snw-card input[type="text"]:not(.snw-token__input),
 .snw-card input[type="url"]:not(.snw-token__input),
+.snw-card input[type="email"]:not(.snw-token__input),
 .snw-card input[type="number"]:not(.snw-token__input),
 .snw-card select,
 .snw-card textarea {
@@ -96,6 +97,7 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 
 .snw-card input[type="text"]:not(.snw-token__input):focus,
 .snw-card input[type="url"]:not(.snw-token__input):focus,
+.snw-card input[type="email"]:not(.snw-token__input):focus,
 .snw-card input[type="number"]:not(.snw-token__input):focus,
 .snw-card select:focus,
 .snw-card textarea:focus {
