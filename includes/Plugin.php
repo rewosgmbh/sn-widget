@@ -65,8 +65,8 @@ class SNW_Plugin {
         if ( ! current_user_can( 'manage_options' ) ) {
             return $links;
         }
-        $url = admin_url( 'options-general.php?page=steigerwald-news-widget' );
-        $links[] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Einstellungen', 'steigerwald-news-widget' ) . '</a>';
+        $url = admin_url( 'admin.php?page=steigerwald-news-widget' );
+        $links[] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Widget-Builder', 'steigerwald-news-widget' ) . '</a>';
         return $links;
     }
 }

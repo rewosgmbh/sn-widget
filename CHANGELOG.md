@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Admin:**
+
+* Das Widget separat von „Einstellungen“ geführt: statt `add_options_page` nutzt das Plugin jetzt `add_menu_page` und erscheint als eigener Eintrag **„News Widget“** (Megaphone-Icon) in der Sidebar. Plugin-Link in der Plugin-Liste zeigt nun ebenfalls dorthin (`admin.php?page=steigerwald-news-widget`).
+
 ## 1.4.3
 
 **Bugfix / Verbesserung:**

@@ -22,12 +22,14 @@ class SNW_Admin {
      * @return void
      */
     public static function admin_menu() {
-        $hook = add_options_page(
+        $hook = add_menu_page(
             __( 'Steigerwald-News Widget', 'steigerwald-news-widget' ),
             __( 'News Widget', 'steigerwald-news-widget' ),
             'manage_options',
             'steigerwald-news-widget',
-            array( __CLASS__, 'render_page' )
+            array( __CLASS__, 'render_page' ),
+            'dashicons-megaphone',
+            30
         );
 
         add_action( 'admin_enqueue_scripts', array( 'SNW_Assets', 'enqueue_builder' ) );
