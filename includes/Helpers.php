@@ -146,7 +146,7 @@ class SNW_Helpers {
         }
 
         // Enum: layout.
-        $layouts = array( 'list', 'cards', 'compact', 'headlines' );
+        $layouts = array( 'list', 'grid', 'cards', 'compact', 'headlines' );
         if ( isset( $raw['layout'] ) && in_array( $raw['layout'], $layouts, true ) ) {
             $cfg['layout'] = $raw['layout'];
         }

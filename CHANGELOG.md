@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0
+
+**Neu / Behoben:**
+
+* **"Raster"-Layout** als eigenständiges, nebeneinander angeordnetes Layout hinzugefügt. Bisher war `grid` zwar als Standard hinterlegt, wurde aber beim Speichern still auf "Liste" (einspaltig) zurückgesetzt – Artikel ließen sich nicht nebeneinander anordnen.
+* **Spalten pro Reihe (1–4)** wirksam für Raster- und Karten-Layout (steuert `--snw-columns`). Standard: 2.
+* **Responsives Raster:** bis 768 px maximal 2 Spalten, bis 520 px eine Spalte – verhindert zu schmale Spalten auf Mobilgeräten.
+* **"Spalten"** ist jetzt auch im öffentlichen Anfrage-Formular wählbar; Raster ist dort das Standard-Layout.
+
 ## 1.3.2
 
 **Bugfixes:**

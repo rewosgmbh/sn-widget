@@ -144,10 +144,21 @@ class SNW_Shortcode {
             <p class="snw-pf-field">
                 <label for="snw-pf-layout"><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
                 <select id="snw-pf-layout" name="layout">
+                    <option value="grid" selected><?php echo esc_html__( 'Raster (nebeneinander)', 'steigerwald-news-widget' ); ?></option>
                     <option value="list"><?php echo esc_html__( 'News Liste', 'steigerwald-news-widget' ); ?></option>
                     <option value="cards"><?php echo esc_html__( 'Karten', 'steigerwald-news-widget' ); ?></option>
                     <option value="compact"><?php echo esc_html__( 'Kompakt', 'steigerwald-news-widget' ); ?></option>
                     <option value="headlines"><?php echo esc_html__( 'Nur Überschriften', 'steigerwald-news-widget' ); ?></option>
+                </select>
+            </p>
+
+            <p class="snw-pf-field">
+                <label for="snw-pf-columns"><?php echo esc_html__( 'Spalten (Artikel pro Reihe)', 'steigerwald-news-widget' ); ?></label>
+                <select id="snw-pf-columns" name="columns">
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
                 </select>
             </p>
 

@@ -47,7 +47,7 @@
             v: 1,
             mode: mode,
             category: category,
-            layout: val('snw-pf-layout') || 'list',
+            layout: val('snw-pf-layout') || 'grid',
             limit: limit,
             title: (val('snw-pf-title') || '').trim(),
             show: {
@@ -60,7 +60,8 @@
                 author: false
             },
             design: {
-                accent: (val('snw-pf-accent') || '#c59a20')
+                accent: (val('snw-pf-accent') || '#c59a20'),
+                columns: (parseInt(val('snw-pf-columns'), 10) || 2)
             }
         };
     }

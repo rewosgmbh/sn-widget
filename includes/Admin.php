@@ -123,8 +123,9 @@ class SNW_Admin {
 
                         <label for="snw-layout"><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
                         <select id="snw-layout">
+                            <option value="grid" selected><?php echo esc_html__( 'Raster (Artikel nebeneinander)', 'steigerwald-news-widget' ); ?></option>
                             <option value="list"><?php echo esc_html__( 'News Liste (Bild links)', 'steigerwald-news-widget' ); ?></option>
-                            <option value="cards"><?php echo esc_html__( 'Karten (Raster)', 'steigerwald-news-widget' ); ?></option>
+                            <option value="cards"><?php echo esc_html__( 'Karten (mit Rahmen)', 'steigerwald-news-widget' ); ?></option>
                             <option value="compact"><?php echo esc_html__( 'Kompakt (Sidebar)', 'steigerwald-news-widget' ); ?></option>
                             <option value="headlines"><?php echo esc_html__( 'Nur Überschriften', 'steigerwald-news-widget' ); ?></option>
                         </select>
@@ -183,7 +184,7 @@ class SNW_Admin {
                         <fieldset class="snw-fieldset">
                             <legend><?php echo esc_html__( 'Bild & Layout', 'steigerwald-news-widget' ); ?></legend>
 
-                            <label for="snw-columns"><?php echo esc_html__( 'Spalten (Karten)', 'steigerwald-news-widget' ); ?></label>
+                            <label for="snw-columns"><?php echo esc_html__( 'Spalten pro Reihe', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-columns">
                                 <option value="1">1</option>
                                 <option value="2" selected>2</option>
