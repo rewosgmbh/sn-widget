@@ -209,6 +209,10 @@ class SNW_Helpers {
             if ( isset( $design['shadow'] ) && in_array( $design['shadow'], $shadows, true ) ) {
                 $cfg['design']['shadow'] = $design['shadow'];
             }
+            $separators = array( 'line', 'none' );
+            if ( isset( $design['separator'] ) && in_array( $design['separator'], $separators, true ) ) {
+                $cfg['design']['separator'] = $design['separator'];
+            }
             $aligns = array( 'left', 'center', 'right' );
             if ( isset( $design['align'] ) && in_array( $design['align'], $aligns, true ) ) {
                 $cfg['design']['align'] = $design['align'];

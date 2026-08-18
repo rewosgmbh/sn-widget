@@ -136,6 +136,7 @@
                 heading_level: $('#snw-heading-level').value,
                 theme: $('#snw-theme').value,
                 shadow: $('#snw-shadow').value,
+                separator: $('#snw-separator').value,
                 align: $('#snw-align').value,
                 title_length: clamp($('#snw-title-length').value, 0, 200),
                 link_mode: $('#snw-link-mode').value,
@@ -188,6 +189,7 @@
         $('#snw-heading-level').value = d.heading_level || 'h3';
         $('#snw-theme').value = d.theme || 'light';
         $('#snw-shadow').value = d.shadow || 'none';
+        $('#snw-separator').value = d.separator || 'line';
         $('#snw-align').value = d.align || 'left';
         $('#snw-title-length').value = (d.title_length !== undefined && d.title_length !== '') ? d.title_length : 0;
         $('#snw-link-mode').value = d.link_mode || 'title';

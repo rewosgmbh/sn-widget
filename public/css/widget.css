@@ -90,6 +90,16 @@
     padding-bottom: 0;
 }
 
+/* "Artikel trennen" = none removes the divider between articles. */
+.steigerwald-news-widget[data-separator="none"] .snw-item {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.steigerwald-news-widget[data-separator="none"][data-layout="cards"] .snw-item {
+    border: 0;
+}
+
 .steigerwald-news-widget[data-layout="list"] .snw-item {
     display: grid;
     grid-template-columns: minmax(96px, 150px) 1fr;

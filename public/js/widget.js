@@ -484,6 +484,7 @@
             el.setAttribute('data-img-pos', (d.image_position === 'right' || d.image_position === 'top') ? d.image_position : 'left');
             el.setAttribute('data-img-ratio', d.image_ratio || '16:9');
             el.setAttribute('data-link-mode', d.link_mode === 'card' ? 'card' : 'title');
+            el.setAttribute('data-separator', d.separator === 'none' ? 'none' : 'line');
         }
     }
 
@@ -928,6 +929,8 @@
         '.steigerwald-news-widget .snw-list--headlines .snw-item::before{content:"•";margin-right:8px;color:var(--snw-accent);}',
         '.steigerwald-news-widget .snw-list--headlines .snw-item{display:flex;gap:8px;align-items:baseline;}',
         '.steigerwald-news-widget .snw-item:last-child{border-bottom:0;padding-bottom:0;}',
+        '.steigerwald-news-widget[data-separator="none"] .snw-item{border-bottom:0;padding-bottom:0;}',
+        '.steigerwald-news-widget[data-separator="none"][data-layout="cards"] .snw-item{border:0;}',
         '.steigerwald-news-widget[data-layout="list"] .snw-item{display:grid;grid-template-columns:minmax(96px,150px) 1fr;gap:14px;align-items:start;}',
         '.steigerwald-news-widget .snw-image-link{display:block;overflow:hidden;aspect-ratio:var(--snw-img-ratio,16/9);background:rgba(127,127,127,.08);border-radius:var(--snw-radius);}',
         '.steigerwald-news-widget .snw-image{display:block;width:100%;height:100%;object-fit:var(--snw-img-fit,cover);}',

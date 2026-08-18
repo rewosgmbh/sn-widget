@@ -256,6 +256,12 @@ class SNW_Admin {
                                 <option value="lg"><?php echo esc_html__( 'Stark', 'steigerwald-news-widget' ); ?></option>
                             </select>
 
+                            <label for="snw-separator"><?php echo esc_html__( 'Artikel trennen', 'steigerwald-news-widget' ); ?></label>
+                            <select id="snw-separator">
+                                <option value="line" selected><?php echo esc_html__( 'Linie', 'steigerwald-news-widget' ); ?></option>
+                                <option value="none"><?php echo esc_html__( 'Keine Trennung', 'steigerwald-news-widget' ); ?></option>
+                            </select>
+
                             <label for="snw-align"><?php echo esc_html__( 'Textausrichtung', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-align">
                                 <option value="left" selected><?php echo esc_html__( 'Links', 'steigerwald-news-widget' ); ?></option>

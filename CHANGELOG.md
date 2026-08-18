@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased
+## 1.4.4
 
 **Admin:**
 
 * Das Widget separat von „Einstellungen“ geführt: statt `add_options_page` nutzt das Plugin jetzt `add_menu_page` und erscheint als eigener Eintrag **„News Widget“** (Megaphone-Icon) in der Sidebar. Plugin-Link in der Plugin-Liste zeigt nun ebenfalls dorthin (`admin.php?page=steigerwald-news-widget`).
+
+**Customization:**
+
+* Neue Design-Option **„Artikel trennen“** (`Linie` / `Keine Trennung`). Steuert eine Trennlinie zwischen den Beiträgen; bei Karten entfernt `Keine Trennung` zusätzlich den Kartenrahmen. Die Linienfarbe folgt der Rahmenfarbe.
 
 ## 1.4.3
 
