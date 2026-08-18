@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SNW_VERSION', '1.4.9' );
+define( 'SNW_VERSION', '1.5.0' );
 define( 'SNW_FILE', __FILE__ );
 define( 'SNW_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNW_URL', plugin_dir_url( __FILE__ ) );
@@ -37,6 +37,7 @@ require_once SNW_PATH . 'includes/Requests.php';
 require_once SNW_PATH . 'includes/Rest.php';
 require_once SNW_PATH . 'includes/Settings.php';
 require_once SNW_PATH . 'includes/Assets.php';
+require_once SNW_PATH . 'includes/Builder.php';
 require_once SNW_PATH . 'includes/Shortcode.php';
 require_once SNW_PATH . 'includes/Admin.php';
 require_once SNW_PATH . 'includes/Plugin.php';

@@ -37,6 +37,8 @@ class SNW_Assets {
             'widgetJsUrl' => SNW_Embed_Generator::script_url(),
             'sourceName'  => get_bloginfo( 'name' ),
             'sourceUrl'   => home_url( '/' ),
+            'isAdmin'     => true,
+            'restRequestUrl' => esc_url_raw( rest_url( 'snw/v1/request' ) ),
             'defaultConfig' => SNW_Helpers::default_config(),
             'presets'     => SNW_Presets::get_all(),
             'i18n'        => array(

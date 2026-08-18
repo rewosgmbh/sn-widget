@@ -21,9 +21,6 @@ function fakeForm(values, checks) {
     return {
         querySelector: function (sel) {
             var id = sel.replace('#', '');
-            if (sel === '#snw-pf-category') {
-                return { value: values.category || '' };
-            }
             if (id in values) {
                 return { value: values[id] };
             }
@@ -37,14 +34,14 @@ function fakeForm(values, checks) {
 
 var form = fakeForm(
     {
-        'snw-pf-mode': 'category',
-        'snw-pf-category': '42',
-        'snw-pf-layout': 'cards',
-        'snw-pf-accent': '#123456',
-        'snw-pf-limit': '7',
-        'snw-pf-title': 'Mein Widget'
+        'snw-mode': 'category',
+        'snw-category': '42',
+        'snw-layout': 'cards',
+        'snw-color-accent': '#123456',
+        'snw-limit': '7',
+        'snw-title': 'Mein Widget'
     },
-    { 'snw-pf-show-image': true, 'snw-pf-show-date': false, 'snw-pf-show-excerpt': true }
+    { 'snw-show-image': true, 'snw-show-date': false, 'snw-show-excerpt': true }
 );
 
 var cfg = FE.buildConfigFromForm(form);
@@ -59,7 +56,7 @@ ok('show.date false', cfg.show.date === false);
 ok('show.excerpt true', cfg.show.excerpt === true);
 
 // mode "latest" must not capture a category.
-var form2 = fakeForm({ 'snw-pf-mode': 'latest', 'snw-pf-limit': '99' }, {});
+var form2 = fakeForm({ 'snw-mode': 'latest', 'snw-limit': '99' }, {});
 var cfg2 = FE.buildConfigFromForm(form2);
 ok('latest drops category', Array.isArray(cfg2.category) && cfg2.category.length === 0);
 ok('limit clamped to 20', cfg2.limit === 20);

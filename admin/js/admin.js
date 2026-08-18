@@ -471,9 +471,12 @@
     // ------------------------------------------------------------------
     var presetsStore = L.presets || [];
 
-    function setStatus(msg) {
+    function setStatus(msg, isError) {
         var el = $('#snw-save-status');
-        if (el) { el.textContent = msg || ''; }
+        if (el) {
+            el.textContent = msg || '';
+            el.classList.toggle('snw-status--error', !!isError);
+        }
     }
 
     function tokenSnippet(code) {
@@ -523,6 +526,51 @@
                 }
             })
             .catch(function () { setStatus(I.saveError || 'Fehler.'); });
+    }
+
+    // Public builder submit: send a partner request to the REST endpoint.
+    function submitRequest() {
+        var emailEl = $('#snw-req-email');
+        var domainEl = $('#snw-req-domain');
+        var nameEl = $('#snw-req-name');
+        var email = emailEl ? emailEl.value.trim() : '';
+        var domain = domainEl ? domainEl.value.trim() : '';
+        var name = nameEl ? nameEl.value.trim() : '';
+
+        if (!email || email.indexOf('@') === -1 || !domain) {
+            setStatus(I.invalid || 'Bitte E-Mail und Domain ausfüllen.', true);
+            return;
+        }
+
+        var btn = $('#snw-request-submit');
+        if (btn) { btn.disabled = true; }
+        setStatus(I.submitting || 'Wird gesendet …', false);
+
+        var cfg = getConfig();
+        var payload = { name: name, email: email, domain: domain, config: cfg };
+        var url = L.restRequestUrl || '';
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(function (res) {
+            if (res.status === 429) {
+                throw new Error(I.rate || 'Zu viele Anfragen. Bitte versuche es später erneut.');
+            }
+            if (!res.ok) {
+                return res.json().catch(function () { return {}; }).then(function (body) {
+                    throw new Error((body && body.message) ? body.message : (I.error || 'Fehler.'));
+                });
+            }
+            return res.json();
+        }).then(function () {
+            setStatus(I.ok || 'Danke! Deine Anfrage wurde übermittelt.', false);
+            if (btn) { btn.disabled = false; }
+        }).catch(function (err) {
+            setStatus(err.message || (I.error || 'Fehler.'), true);
+            if (btn) { btn.disabled = false; }
+        });
     }
 
     function copyToken(id) {
@@ -860,13 +908,18 @@
             }, 300));
         }
 
-        $('#snw-save').addEventListener('click', savePreset);
-        $('#snw-copy').addEventListener('click', copyCurrent);
-        $('#snw-reset').addEventListener('click', function () {
-            state.currentId = ''; state.name = ''; $('#snw-name').value = '';
-            applyConfig(L.defaultConfig || {});
-            setStatus('');
-        });
+        if (L.isAdmin) {
+            $('#snw-save').addEventListener('click', savePreset);
+            $('#snw-copy').addEventListener('click', copyCurrent);
+            $('#snw-reset').addEventListener('click', function () {
+                state.currentId = ''; state.name = ''; $('#snw-name').value = '';
+                applyConfig(L.defaultConfig || {});
+                setStatus('');
+            });
+        } else {
+            var reqBtn = $('#snw-request-submit');
+            if (reqBtn) { reqBtn.addEventListener('click', submitRequest); }
+        }
 
         applyModeVisibility();
         updateModeHint();

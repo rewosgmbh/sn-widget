@@ -77,123 +77,75 @@ class SNW_Shortcode {
      */
     public static function render_builder() {
         if ( ! self::$assets_enqueued ) {
+            // Public widget renderer (drives the live preview) + base styles.
+            wp_enqueue_script(
+                SNW_Assets::WIDGET_JS_HANDLE,
+                SNW_Embed_Generator::script_url(),
+                array(),
+                SNW_VERSION,
+                true
+            );
             wp_enqueue_style(
-                'snw-frontend-css',
-                SNW_URL . 'public/css/frontend.css',
+                'snw-widget-css',
+                SNW_URL . 'public/css/widget.css',
+                array(),
+                SNW_VERSION
+            );
+
+            // Shared builder styles + the same builder script as the admin so
+            // the public form has feature parity (controls + live preview).
+            wp_enqueue_style(
+                'snw-admin-css',
+                SNW_URL . 'admin/css/admin.css',
                 array(),
                 SNW_VERSION
             );
             wp_enqueue_script(
-                'snw-frontend',
-                SNW_URL . 'public/js/frontend.js',
-                array(),
+                SNW_Assets::ADMIN_JS_HANDLE,
+                SNW_URL . 'admin/js/admin.js',
+                array( 'jquery', SNW_Assets::WIDGET_JS_HANDLE ),
                 SNW_VERSION,
                 true
             );
 
             $l10n = array(
-                'restUrl'       => esc_url_raw( rest_url( 'snw/v1/request' ) ),
-                'categoriesUrl' => esc_url_raw( rest_url( 'wp/v2/categories' ) ),
-                'i18n'          => array(
-                    'submit'       => __( 'Widget anfragen', 'steigerwald-news-widget' ),
-                    'submitting'   => __( 'Wird gesendet …', 'steigerwald-news-widget' ),
-                    'ok'           => __( 'Danke! Deine Anfrage wurde übermittelt. Wir melden uns mit dem Einbettungscode.', 'steigerwald-news-widget' ),
-                    'error'        => __( 'Übermittlung fehlgeschlagen. Bitte versuche es erneut.', 'steigerwald-news-widget' ),
-                    'invalid'      => __( 'Bitte E-Mail und Domain korrekt ausfüllen.', 'steigerwald-news-widget' ),
-                    'rate'         => __( 'Zu viele Anfragen. Bitte versuche es später erneut.', 'steigerwald-news-widget' ),
-                    'email'        => __( 'E-Mail', 'steigerwald-news-widget' ),
-                    'domain'       => __( 'Domain (wo das Widget eingebettet wird)', 'steigerwald-news-widget' ),
-                    'name'         => __( 'Name (optional)', 'steigerwald-news-widget' ),
-                    'title'        => __( 'Überschrift (optional)', 'steigerwald-news-widget' ),
-                    'layout'       => __( 'Layout', 'steigerwald-news-widget' ),
-                    'accent'       => __( 'Akzentfarbe', 'steigerwald-news-widget' ),
-                    'count'        => __( 'Anzahl Beiträge', 'steigerwald-news-widget' ),
-                    'mode'         => __( 'Inhaltsmodus', 'steigerwald-news-widget' ),
-                    'category'     => __( 'Kategorie', 'steigerwald-news-widget' ),
+                'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+                'nonce'          => '',
+                'nonceField'     => SNW_Settings::NONCE_FIELD,
+                'apiBase'        => rest_url( 'wp/v2' ),
+                'adminAjax'      => admin_url( 'admin-ajax.php' ),
+                'widgetJsUrl'    => SNW_Embed_Generator::script_url(),
+                'sourceName'     => get_bloginfo( 'name' ),
+                'sourceUrl'      => home_url( '/' ),
+                'isAdmin'        => false,
+                'restRequestUrl' => esc_url_raw( rest_url( 'snw/v1/request' ) ),
+                'defaultConfig'  => SNW_Helpers::default_config(),
+                'i18n'           => array(
+                    'saveOk'        => __( 'Widget gespeichert.', 'steigerwald-news-widget' ),
+                    'saveError'     => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ),
+                    'confirmDelete' => __( 'Dieses Widget wirklich löschen?', 'steigerwald-news-widget' ),
+                    'copied'        => __( 'Code kopiert.', 'steigerwald-news-widget' ),
+                    'copyError'     => __( 'Kopieren nicht möglich – bitte manuell auswählen.', 'steigerwald-news-widget' ),
+                    'loading'       => __( 'Nachrichten werden geladen …', 'steigerwald-news-widget' ),
+                    'empty'         => __( 'Aktuell sind keine passenden Beiträge vorhanden.', 'steigerwald-news-widget' ),
+                    'error'         => __( 'Ubermittlung fehlgeschlagen. Bitte versuche es erneut.', 'steigerwald-news-widget' ),
+                    'untitled'      => __( 'Beitrag', 'steigerwald-news-widget' ),
+                    'readmore'      => __( 'Artikel lesen', 'steigerwald-news-widget' ),
+                    'searchPosts'   => __( 'Artikel suchen …', 'steigerwald-news-widget' ),
+                    'searchTags'    => __( 'Schlagwort suchen …', 'steigerwald-news-widget' ),
+                    'noTags'        => __( 'Keine Schlagworter gefunden.', 'steigerwald-news-widget' ),
+                    'submitting'    => __( 'Wird gesendet …', 'steigerwald-news-widget' ),
+                    'ok'            => __( 'Danke! Deine Anfrage wurde ubermittelt. Wir melden uns mit dem Einbettungscode.', 'steigerwald-news-widget' ),
+                    'invalid'       => __( 'Bitte E-Mail und Domain korrekt ausfullen.', 'steigerwald-news-widget' ),
+                    'rate'          => __( 'Zu viele Anfragen. Bitte versuche es spater erneut.', 'steigerwald-news-widget' ),
                 ),
             );
-            wp_localize_script( 'snw-frontend', 'SNW_Public', $l10n );
+            wp_localize_script( SNW_Assets::ADMIN_JS_HANDLE, 'SNW_Admin', $l10n );
             self::$assets_enqueued = true;
         }
 
         ob_start();
-        ?>
-        <form id="snw-public-form" class="snw-public-form" novalidate>
-            <p class="snw-pf-field">
-                <label for="snw-pf-name"><?php echo esc_html__( 'Name (optional)', 'steigerwald-news-widget' ); ?></label>
-                <input type="text" id="snw-pf-name" name="name" maxlength="100" autocomplete="name">
-            </p>
-            <p class="snw-pf-field snw-pf-required">
-                <label for="snw-pf-email"><?php echo esc_html__( 'E-Mail', 'steigerwald-news-widget' ); ?> <span aria-hidden="true">*</span></label>
-                <input type="email" id="snw-pf-email" name="email" required autocomplete="email">
-            </p>
-            <p class="snw-pf-field snw-pf-required">
-                <label for="snw-pf-domain"><?php echo esc_html__( 'Domain (wo das Widget eingebettet wird)', 'steigerwald-news-widget' ); ?> <span aria-hidden="true">*</span></label>
-                <input type="text" id="snw-pf-domain" name="domain" required placeholder="example.com" autocomplete="off">
-            </p>
-
-            <p class="snw-pf-field">
-                <label for="snw-pf-mode"><?php echo esc_html__( 'Inhaltsmodus', 'steigerwald-news-widget' ); ?></label>
-                <select id="snw-pf-mode" name="mode">
-                    <option value="latest"><?php echo esc_html__( 'Neueste Beiträge', 'steigerwald-news-widget' ); ?></option>
-                    <option value="category"><?php echo esc_html__( 'Kategorie', 'steigerwald-news-widget' ); ?></option>
-                </select>
-            </p>
-
-            <p class="snw-pf-field" id="snw-pf-category-wrap" hidden>
-                <label for="snw-pf-category"><?php echo esc_html__( 'Kategorie', 'steigerwald-news-widget' ); ?></label>
-                <select id="snw-pf-category" name="category"></select>
-            </p>
-
-            <p class="snw-pf-field">
-                <label for="snw-pf-layout"><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
-                <select id="snw-pf-layout" name="layout">
-                    <option value="grid" selected><?php echo esc_html__( 'Raster (nebeneinander)', 'steigerwald-news-widget' ); ?></option>
-                    <option value="list"><?php echo esc_html__( 'News Liste', 'steigerwald-news-widget' ); ?></option>
-                    <option value="cards"><?php echo esc_html__( 'Karten', 'steigerwald-news-widget' ); ?></option>
-                    <option value="compact"><?php echo esc_html__( 'Kompakt', 'steigerwald-news-widget' ); ?></option>
-                    <option value="headlines"><?php echo esc_html__( 'Nur Überschriften', 'steigerwald-news-widget' ); ?></option>
-                </select>
-            </p>
-
-            <p class="snw-pf-field">
-                <label for="snw-pf-columns"><?php echo esc_html__( 'Spalten (Artikel pro Reihe)', 'steigerwald-news-widget' ); ?></label>
-                <select id="snw-pf-columns" name="columns">
-                    <option value="1">1</option>
-                    <option value="2" selected>2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                </select>
-            </p>
-
-            <p class="snw-pf-field snw-pf-inline">
-                <label for="snw-pf-accent"><?php echo esc_html__( 'Akzentfarbe', 'steigerwald-news-widget' ); ?></label>
-                <input type="color" id="snw-pf-accent" name="accent" value="#c59a20">
-            </p>
-
-            <p class="snw-pf-field snw-pf-inline">
-                <label for="snw-pf-limit"><?php echo esc_html__( 'Anzahl Beiträge', 'steigerwald-news-widget' ); ?></label>
-                <input type="number" id="snw-pf-limit" name="limit" min="1" max="20" value="5">
-            </p>
-
-            <p class="snw-pf-field">
-                <label for="snw-pf-title"><?php echo esc_html__( 'Überschrift (optional)', 'steigerwald-news-widget' ); ?></label>
-                <input type="text" id="snw-pf-title" name="title" maxlength="160">
-            </p>
-
-            <fieldset class="snw-pf-fieldset">
-                <legend><?php echo esc_html__( 'Sichtbare Elemente', 'steigerwald-news-widget' ); ?></legend>
-                <label><input type="checkbox" id="snw-pf-show-image" name="show_image" checked> <?php echo esc_html__( 'Beitragsbild', 'steigerwald-news-widget' ); ?></label>
-                <label><input type="checkbox" id="snw-pf-show-date" name="show_date" checked> <?php echo esc_html__( 'Datum', 'steigerwald-news-widget' ); ?></label>
-                <label><input type="checkbox" id="snw-pf-show-excerpt" name="show_excerpt" checked> <?php echo esc_html__( 'Teaser', 'steigerwald-news-widget' ); ?></label>
-            </fieldset>
-
-            <p class="snw-pf-actions">
-                <button type="submit" id="snw-pf-submit" class="button button-primary"><?php echo esc_html__( 'Widget anfragen', 'steigerwald-news-widget' ); ?></button>
-            </p>
-            <p class="snw-pf-status" id="snw-pf-status" role="status" aria-live="polite"></p>
-        </form>
-        <?php
+        SNW_Builder::render_form( array( 'context' => 'public' ) );
         return ob_get_clean();
     }
 

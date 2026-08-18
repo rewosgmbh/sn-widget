@@ -118,6 +118,10 @@
     color: #007a3e;
 }
 
+.snw-status--error {
+    color: #d63638;
+}
+
 /* Token / tag input */
 .snw-token {
     position: relative;

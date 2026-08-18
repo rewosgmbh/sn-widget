@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0
+
+**Öffentliches Widget-Erstellen mit vollem Funktionsumfang:**
+
+* Das öffentliche `[steigerwald_news_widget_builder]`-Formular nutzt jetzt **denselben Builder** wie die Admin-"Erstellen"-Seite – inkl. aller Inhaltsmodi (Kategorie, Schlagwörter, einzelne/hybride Beiträge), Design-Reglern, Farben, Theme-Umschalter und **Live-Vorschau**.
+* Einreichungen werden weiterhin als Partneranfrage an `POST /snw/v1/request` gesendet (Name, E-Mail, Domain + vollständige Konfiguration).
+* Kein Duplicate-Code mehr: Builder-Markup liegt zentral in `SNW_Builder::render_form()`, das Admin- und Public-Seite teilen; `admin.js` wird kontextabhängig (Admin speichert Preset + kopiert Snippet, Public sendet Anfrage).
+
 ## 1.4.9
 
 **Sicherheit & Einbettung:**
