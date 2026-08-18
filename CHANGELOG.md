@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.6
+
+**Admin – Bedienung:**
+
+* **Visueller Layout-Wähler** mit Miniatur-Vorschauen (Raster, Liste, Karten, Kompakt, Nur Überschriften) ersetzt das Layout-Dropdown – man sieht sofort, wie das Layout aussieht.
+* **Farbschema als Segmented-Toggle** (Hell / Dunkel) statt Dropdown.
+* **„Live“-Kennzeichnung** bei der Vorschau (pulsierender Punkt), die erklärt, dass Änderungen sofort erscheinen.
+
 ## 1.4.5
 
 **Admin – Bedienung & Übersicht:**

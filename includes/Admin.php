@@ -136,14 +136,30 @@ class SNW_Admin {
                     <section class="snw-card" id="snw-sec-design">
                         <h2><?php echo esc_html__( 'Design', 'steigerwald-news-widget' ); ?></h2>
 
-                        <label for="snw-layout"><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
-                        <select id="snw-layout">
-                            <option value="grid" selected><?php echo esc_html__( 'Raster (Artikel nebeneinander)', 'steigerwald-news-widget' ); ?></option>
-                            <option value="list"><?php echo esc_html__( 'News Liste (Bild links)', 'steigerwald-news-widget' ); ?></option>
-                            <option value="cards"><?php echo esc_html__( 'Karten (mit Rahmen)', 'steigerwald-news-widget' ); ?></option>
-                            <option value="compact"><?php echo esc_html__( 'Kompakt (Sidebar)', 'steigerwald-news-widget' ); ?></option>
-                            <option value="headlines"><?php echo esc_html__( 'Nur Überschriften', 'steigerwald-news-widget' ); ?></option>
-                        </select>
+                        <label><?php echo esc_html__( 'Layout', 'steigerwald-news-widget' ); ?></label>
+                        <div class="snw-layout-picker" id="snw-layout-picker" role="radiogroup" aria-label="<?php echo esc_attr__( 'Layout', 'steigerwald-news-widget' ); ?>">
+                            <button type="button" class="snw-layout-opt is-active" data-layout="grid" aria-pressed="true">
+                                <span class="snw-layout-thumb snw-thumb-grid" aria-hidden="true"></span>
+                                <span class="snw-layout-name"><?php echo esc_html__( 'Raster', 'steigerwald-news-widget' ); ?></span>
+                            </button>
+                            <button type="button" class="snw-layout-opt" data-layout="list" aria-pressed="false">
+                                <span class="snw-layout-thumb snw-thumb-list" aria-hidden="true"></span>
+                                <span class="snw-layout-name"><?php echo esc_html__( 'Liste', 'steigerwald-news-widget' ); ?></span>
+                            </button>
+                            <button type="button" class="snw-layout-opt" data-layout="cards" aria-pressed="false">
+                                <span class="snw-layout-thumb snw-thumb-cards" aria-hidden="true"></span>
+                                <span class="snw-layout-name"><?php echo esc_html__( 'Karten', 'steigerwald-news-widget' ); ?></span>
+                            </button>
+                            <button type="button" class="snw-layout-opt" data-layout="compact" aria-pressed="false">
+                                <span class="snw-layout-thumb snw-thumb-compact" aria-hidden="true"></span>
+                                <span class="snw-layout-name"><?php echo esc_html__( 'Kompakt', 'steigerwald-news-widget' ); ?></span>
+                            </button>
+                            <button type="button" class="snw-layout-opt" data-layout="headlines" aria-pressed="false">
+                                <span class="snw-layout-thumb snw-thumb-headlines" aria-hidden="true"></span>
+                                <span class="snw-layout-name"><?php echo esc_html__( 'Nur Überschriften', 'steigerwald-news-widget' ); ?></span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="snw-layout" value="grid">
 
                         <fieldset class="snw-checkboxes">
                             <legend><?php echo esc_html__( 'Sichtbare Elemente', 'steigerwald-news-widget' ); ?></legend>
@@ -257,11 +273,12 @@ class SNW_Admin {
                         <details class="snw-fieldset" open>
                             <summary><?php echo esc_html__( 'Theme & Stil', 'steigerwald-news-widget' ); ?></summary>
 
-                            <label for="snw-theme"><?php echo esc_html__( 'Farbschema', 'steigerwald-news-widget' ); ?></label>
-                            <select id="snw-theme">
-                                <option value="light" selected><?php echo esc_html__( 'Hell', 'steigerwald-news-widget' ); ?></option>
-                                <option value="dark"><?php echo esc_html__( 'Dunkel', 'steigerwald-news-widget' ); ?></option>
-                            </select>
+                            <label><?php echo esc_html__( 'Farbschema', 'steigerwald-news-widget' ); ?></label>
+                            <div class="snw-segmented" id="snw-theme-picker" role="radiogroup" aria-label="<?php echo esc_attr__( 'Farbschema', 'steigerwald-news-widget' ); ?>">
+                                <button type="button" class="snw-seg-opt is-active" data-theme="light" aria-pressed="true"><?php echo esc_html__( 'Hell', 'steigerwald-news-widget' ); ?></button>
+                                <button type="button" class="snw-seg-opt" data-theme="dark" aria-pressed="false"><?php echo esc_html__( 'Dunkel', 'steigerwald-news-widget' ); ?></button>
+                            </div>
+                            <input type="hidden" id="snw-theme" value="light">
 
                             <label for="snw-shadow"><?php echo esc_html__( 'Schatten', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-shadow">
@@ -363,8 +380,11 @@ class SNW_Admin {
 
                 <!-- ============ Live preview column ============ -->
                 <div class="snw-builder__preview" id="snw-sec-preview">
-                    <h2><?php echo esc_html__( 'Live-Vorschau', 'steigerwald-news-widget' ); ?></h2>
-                    <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation.', 'steigerwald-news-widget' ); ?></p>
+                    <h2>
+                        <?php echo esc_html__( 'Live-Vorschau', 'steigerwald-news-widget' ); ?>
+                        <span class="snw-live-badge"><span class="snw-live-dot" aria-hidden="true"></span><?php echo esc_html__( 'Live', 'steigerwald-news-widget' ); ?></span>
+                    </h2>
+                    <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation – Änderungen erscheinen sofort.', 'steigerwald-news-widget' ); ?></p>
                     <div class="snw-preview-toolbar">
                         <label for="snw-preview-width"><?php echo esc_html__( 'Vorschau-Breite', 'steigerwald-news-widget' ); ?></label>
                         <select id="snw-preview-width">
