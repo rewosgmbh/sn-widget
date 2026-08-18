@@ -758,3 +758,90 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     font-size: 12px;
     color: #50575e;
 }
+
+/* ===== Public 4-step creator ===== */
+.snw-builder--public .snw-admin-only {
+    display: none !important;
+}
+
+/* Step sections (1 Inhalte · 2 Darstellung · 3 Design · 4 Anfragen) */
+.snw-step {
+    scroll-margin-top: 48px;
+}
+
+.snw-step__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+}
+
+.snw-step__num {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #c59a20;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.snw-step__head h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.snw-step__lead {
+    margin: 0 0 12px;
+    color: #50575e;
+    font-size: 14px;
+}
+
+.snw-optional {
+    color: #8c8f94;
+    font-weight: 400;
+}
+
+/* Make the layout picker more prominent on the public creator */
+.snw-builder--public .snw-layout-picker {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+
+.snw-builder--public .snw-layout-thumb {
+    width: 64px;
+    height: 46px;
+}
+
+/* Step 4: request — visually separated from the builder */
+.snw-request__card {
+    border-color: #c59a20;
+    box-shadow: inset 0 2px 0 #c59a20;
+}
+
+.snw-request__lead {
+    margin: 0 0 14px;
+    color: #50575e;
+    font-size: 14px;
+}
+
+.snw-request-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 16px;
+    font-size: 15px;
+    text-align: center;
+}
+
+.snw-request__note {
+    margin: 12px 0 0;
+    color: #646970;
+    font-size: 12px;
+}
+
+.snw-request .snw-status {
+    margin-top: 8px;
+}
