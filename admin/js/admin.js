@@ -236,7 +236,7 @@
         var el = $('#snw-preview');
         if (!el) { return; }
         el.setAttribute('data-config', W.encodeConfig(cfg));
-        el.className = 'steigerwald-news-widget';
+        el.className = 'steigerwald-news-widget snw-preview';
         W.refresh(el);
     }
 

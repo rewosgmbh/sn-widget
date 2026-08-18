@@ -252,6 +252,15 @@
     min-height: 240px;
 }
 
+/* Admin preview: the preview frame is narrow, so the responsive column caps
+   from widget.css would always collapse to a single column and make the
+   "Artikel pro Reihe" control look dead. Show the configured column count
+   here; real embeds keep the responsive behaviour. */
+.steigerwald-news-widget.snw-preview[data-layout="grid"] .snw-list,
+.steigerwald-news-widget.snw-preview[data-layout="cards"] .snw-list {
+    grid-template-columns: repeat(var(--snw-columns, 2), minmax(0, 1fr)) !important;
+}
+
 .snw-preset-table td,
 .snw-preset-table th {
     vertical-align: middle;

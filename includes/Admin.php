@@ -184,7 +184,7 @@ class SNW_Admin {
                         <fieldset class="snw-fieldset">
                             <legend><?php echo esc_html__( 'Bild & Layout', 'steigerwald-news-widget' ); ?></legend>
 
-                            <label for="snw-columns"><?php echo esc_html__( 'Spalten pro Reihe', 'steigerwald-news-widget' ); ?></label>
+                            <label for="snw-columns"><?php echo esc_html__( 'Artikel pro Reihe', 'steigerwald-news-widget' ); ?></label>
                             <select id="snw-columns">
                                 <option value="1">1</option>
                                 <option value="2" selected>2</option>

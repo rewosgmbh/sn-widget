@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.1
+
+**Bugfix:**
+
+* Admin-Vorschau zeigte die Einstellung "Artikel pro Reihe" (vorher "Spalten pro Reihe") nicht: das Vorschaufenster ist schmaler als der responsive Bruchpunkt, wodurch die Spalten immer auf eine reduziert wurden. Die Vorschau zeigt jetzt die eingestellte Spaltenzahl; echte Einbettungen behalten das responsive Verhalten.
+* Beschriftung im Builder in "Artikel pro Reihe" umbenannt.
+
 ## 1.4.0
 
 **Neu / Behoben:**
