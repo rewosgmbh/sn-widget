@@ -342,6 +342,17 @@ class SNW_Admin {
                 <div class="snw-builder__preview">
                     <h2><?php echo esc_html__( 'Live-Vorschau', 'steigerwald-news-widget' ); ?></h2>
                     <p class="description"><?php echo esc_html__( 'Zeigt echte aktuelle Beiträge aus dieser WordPress-Installation.', 'steigerwald-news-widget' ); ?></p>
+                    <div class="snw-preview-toolbar">
+                        <label for="snw-preview-width"><?php echo esc_html__( 'Vorschau-Breite', 'steigerwald-news-widget' ); ?></label>
+                        <select id="snw-preview-width">
+                            <option value="100%"><?php echo esc_html__( 'Container (100%)', 'steigerwald-news-widget' ); ?></option>
+                            <option value="320px">320 px</option>
+                            <option value="480px">480 px</option>
+                            <option value="768px"><?php echo esc_html__( '768 px (Tablet)', 'steigerwald-news-widget' ); ?></option>
+                            <option value="1024px"><?php echo esc_html__( '1024 px (Desktop)', 'steigerwald-news-widget' ); ?></option>
+                            <option value="1280px"><?php echo esc_html__( '1280 px (Breit)', 'steigerwald-news-widget' ); ?></option>
+                        </select>
+                    </div>
                     <div class="snw-preview-frame">
                         <div id="snw-preview"></div>
                     </div>

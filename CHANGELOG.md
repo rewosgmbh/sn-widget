@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.3
+
+**Bugfix / Verbesserung:**
+
+* Admin-Builder: Vorschau war ein schmales Feld, das nur in der Höhe wuchs. Neuer Regler **"Vorschau-Breite"** (Container 100 %, 320/480/768/1024/1280 px) dehnt die Vorschau in die Breite – so lässt sich das Widget auch in voller Breite und responsiv begutachten. Die Preview-Spalte ist zudem etwas breiter geworden.
+
 ## 1.4.2
 
 **Bugfix:**
