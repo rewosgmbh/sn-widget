@@ -52,11 +52,20 @@ class SNW_Admin {
 
         add_submenu_page(
             'steigerwald-news-widget',
-            __( 'Gespeicherte & Anfragen', 'steigerwald-news-widget' ),
-            __( 'Gespeicherte & Anfragen', 'steigerwald-news-widget' ),
+            __( 'Gespeicherte Widgets', 'steigerwald-news-widget' ),
+            __( 'Gespeicherte', 'steigerwald-news-widget' ),
             'manage_options',
-            'steigerwald-news-widget-manage',
-            array( __CLASS__, 'render_manage' )
+            'steigerwald-news-widget-saved',
+            array( __CLASS__, 'render_saved' )
+        );
+
+        add_submenu_page(
+            'steigerwald-news-widget',
+            __( 'Partner-Anfragen', 'steigerwald-news-widget' ),
+            __( 'Partneranfragen', 'steigerwald-news-widget' ),
+            'manage_options',
+            'steigerwald-news-widget-requests',
+            array( __CLASS__, 'render_requests' )
         );
 
         add_action( 'admin_enqueue_scripts', array( 'SNW_Assets', 'enqueue_builder' ) );
@@ -515,7 +524,8 @@ class SNW_Admin {
 
             <p class="snw-quick">
                 <a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-create' ) ); ?>"><?php echo esc_html__( 'Neues Widget erstellen', 'steigerwald-news-widget' ); ?></a>
-                <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-manage' ) ); ?>"><?php echo esc_html__( 'Gespeicherte & Anfragen', 'steigerwald-news-widget' ); ?></a>
+                <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-saved' ) ); ?>"><?php echo esc_html__( 'Gespeicherte Widgets', 'steigerwald-news-widget' ); ?></a>
+                <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-requests' ) ); ?>"><?php echo esc_html__( 'Partneranfragen', 'steigerwald-news-widget' ); ?></a>
                 <?php if ( $builder_url ) : ?>
                     <a class="button" href="<?php echo esc_url( $builder_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html__( 'Öffentliche Erstellseite', 'steigerwald-news-widget' ); ?></a>
                 <?php endif; ?>
@@ -582,7 +592,7 @@ class SNW_Admin {
                             <?php endforeach; ?>
                         </ul>
                         <p style="margin-top:16px;">
-                            <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-manage' ) ); ?>"><?php echo esc_html__( 'Alle Anfragen ansehen', 'steigerwald-news-widget' ); ?></a>
+                            <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-requests' ) ); ?>"><?php echo esc_html__( 'Alle Anfragen ansehen', 'steigerwald-news-widget' ); ?></a>
                         </p>
                     <?php endif; ?>
                 </div>
@@ -592,29 +602,40 @@ class SNW_Admin {
     }
 
     /**
-     * Render the manage page (saved presets + partner requests).
+     * Render the saved-presets page.
      *
      * @return void
      */
-    public static function render_manage() {
+    public static function render_saved() {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'Keine Berechtigung.', 'steigerwald-news-widget' ) );
         }
         ?>
         <div class="wrap snw-wrap">
-            <h1><?php echo esc_html__( 'Gespeicherte & Anfragen', 'steigerwald-news-widget' ); ?></h1>
+            <h1><?php echo esc_html__( 'Gespeicherte Widgets', 'steigerwald-news-widget' ); ?></h1>
             <p class="snw-intro">
-                <?php echo esc_html__( 'Hier verwaltest du deine gespeicherten Widgets und siehst eingehende Partner-Anfragen.', 'steigerwald-news-widget' ); ?>
+                <?php echo esc_html__( 'Hier verwaltest du deine gespeicherten Widget-Konfigurationen.', 'steigerwald-news-widget' ); ?>
             </p>
 
-            <h2><?php echo esc_html__( 'Gespeicherte Widgets', 'steigerwald-news-widget' ); ?></h2>
             <p class="description"><?php echo esc_html__( 'Presets speichern nur Konfiguration, keine Beiträge.', 'steigerwald-news-widget' ); ?></p>
             <?php echo self::render_presets_table(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+        </div>
+        <?php
+    }
 
-            <hr>
-
-            <h2><?php echo esc_html__( 'Partner-Anfragen', 'steigerwald-news-widget' ); ?></h2>
-            <p class="description">
+    /**
+     * Render the partner-requests page.
+     *
+     * @return void
+     */
+    public static function render_requests() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'Keine Berechtigung.', 'steigerwald-news-widget' ) );
+        }
+        ?>
+        <div class="wrap snw-wrap">
+            <h1><?php echo esc_html__( 'Partner-Anfragen', 'steigerwald-news-widget' ); ?></h1>
+            <p class="snw-intro">
                 <?php echo esc_html__( 'Externe Nutzer können auf der öffentlichen Erstellseite ein Widget gestalten und anfragen. Hier siehst du die Einreichungen, kannst sie annehmen (erzeugt einen domain-gebundenen Einbettungscode) oder ablehnen.', 'steigerwald-news-widget' ); ?>
             </p>
 

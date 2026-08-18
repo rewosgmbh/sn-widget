@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.8
+
+**Admin – Menü:**
+
+* **„Gespeicherte & Anfragen" getrennt:** Aus der kombinierten Unterseite wurden zwei eigene Unterseiten – **Gespeicherte** (Presets) und **Partneranfragen** (Einreichungen).
+
 ## 1.4.7
 
 **Admin – Struktur:**
