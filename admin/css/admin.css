@@ -74,12 +74,34 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     margin: 12px 0 4px;
 }
 
-.snw-card input[type="text"],
-.snw-card input[type="url"],
-.snw-card input[type="number"],
-.snw-card select {
+.snw-card input[type="text"]:not(.snw-token__input),
+.snw-card input[type="url"]:not(.snw-token__input),
+.snw-card input[type="number"]:not(.snw-token__input),
+.snw-card select,
+.snw-card textarea {
     width: 100%;
     max-width: 420px;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    color: #2c3338;
+    box-shadow: none;
+}
+
+.snw-card textarea {
+    max-width: 100%;
+    resize: vertical;
+}
+
+.snw-card input[type="text"]:not(.snw-token__input):focus,
+.snw-card input[type="url"]:not(.snw-token__input):focus,
+.snw-card input[type="number"]:not(.snw-token__input):focus,
+.snw-card select:focus,
+.snw-card textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
 }
 
 .snw-card .description {
@@ -153,8 +175,8 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 
 .snw-token__input {
     width: 100%;
-    border: 0;
-    box-shadow: none;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
 .snw-token__list {
