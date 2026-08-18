@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.7
+
+**Admin – Struktur:**
+
+* **Dashboard als Startseite:** Die Plugin-Startseite ist jetzt ein Übersichts-Dashboard (gespeicherte Widgets, offene/akzeptierte Anfragen, veröffentlichte Beiträge, letzte Widgets + Anfragen, Verteilung nach Modus).
+* **„Erstellen“-Unterseite:** Der Widget-Builder (Konfiguration + Live-Vorschau) ist jetzt eine eigene Unterseite.
+* **„Gespeicherte & Anfragen“-Unterseite:** Presets-Tabelle und Partner-Anfragen wurden aus der Startseite ausgegliedert.
+
 ## 1.4.6
 
 **Admin – Bedienung:**

@@ -738,7 +738,24 @@
     // ------------------------------------------------------------------
     // Init
     // ------------------------------------------------------------------
-    function init() {
+    function initManage() {
+        var table = $('#snw-preset-table');
+        if (table) { table.addEventListener('click', onPresetAction); }
+
+        var loadBtn = $('#snw-load-requests');
+        if (loadBtn) {
+            loadBtn.addEventListener('click', function () { loadRequests(); });
+            loadRequests();
+        }
+        var panel = $('#snw-requests-panel');
+        if (panel) { panel.addEventListener('click', onRequestsAction); }
+        var createBtn = $('#snw-create-page');
+        if (createBtn) { createBtn.addEventListener('click', createPage); }
+
+        loadPresets();
+    }
+
+    function initBuilder() {
         loadCategories();
         $('#snw-api').value = L.apiBase;
         $('#snw-source-name').value = L.sourceName;
@@ -794,9 +811,11 @@
         }
 
         $('#snw-mode').addEventListener('change', function () { applyModeVisibility(); updateModeHint(); updatePreview(); });
-        $('#snw-layout').addEventListener('change', function () {         applyModeVisibility();
-        updateModeHint();
-        updatePreview(); });
+        $('#snw-layout').addEventListener('change', function () {
+            applyModeVisibility();
+            updateModeHint();
+            updatePreview();
+        });
         $('#snw-teaser').addEventListener('input', function () { var o = $('#snw-teaser-out'); if (o) { o.textContent = this.value; } });
 
         var tagInput = $('#snw-tag-search');
@@ -834,25 +853,16 @@
             setStatus('');
         });
 
-        var table = $('#snw-preset-table');
-        if (table) { table.addEventListener('click', onPresetAction); }
-
-        var loadBtn = $('#snw-load-requests');
-        if (loadBtn) {
-            loadBtn.addEventListener('click', function () { loadRequests(); });
-            loadRequests();
-        }
-        var panel = $('#snw-requests-panel');
-        if (panel) { panel.addEventListener('click', onRequestsAction); }
-        var createBtn = $('#snw-create-page');
-        if (createBtn) { createBtn.addEventListener('click', createPage); }
-
         applyModeVisibility();
         updateModeHint();
         syncPicker('#snw-layout-picker', '.snw-layout-opt', 'data-layout', $('#snw-layout').value);
         syncPicker('#snw-theme-picker', '.snw-seg-opt', 'data-theme', $('#snw-theme').value);
         updatePreview();
-        loadPresets();
+    }
+
+    function init() {
+        if ($('#snw-builder-form')) { initBuilder(); }
+        if ($('#snw-preset-table') || $('#snw-requests-panel')) { initManage(); }
     }
 
     if (document.readyState === 'loading') {
