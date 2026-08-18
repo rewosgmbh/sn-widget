@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.9
+
+**Sicherheit & Einbettung:**
+
+* **Keine Base64-Customization mehr in externen Snippets:** Der „Einbettungscode kopieren"-Button im Builder und der „Code kopieren"-Button in der Preset-Tabelle geben jetzt nur noch ein **Token** (`data-code`) aus – die Customization steht nicht mehr im Quelltext. Das Backend liefert die Konfiguration bei Bedarf aus.
+* **Domain-Lock (Backend):** Das Token-basierte Widget wird nur auf der freigegebenen Domain (z. B. maggus.com) ausgeliefert; auf einer anderen Domain (z. B. maggus.de) antwortet das Backend mit 403 und das Widget zeigt einen klaren Block-Hinweis.
+* **Interner Shortcode** (`[steigerwald_news_widget]`) behält weiterhin `data-config` (Base64) – er läuft auf der Quellseite selbst.
+
 ## 1.4.8
 
 **Admin – Menü:**

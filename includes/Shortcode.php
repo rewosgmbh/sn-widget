@@ -62,7 +62,11 @@ class SNW_Shortcode {
             SNW_VERSION
         );
 
-        $encoded = SNW_Embed_Generator::encode_config( $preset['config'] );
+        $config = $preset['config'];
+        // The internal shortcode always renders on the source site, so any
+        // domain lock stored for partner use must not block it here.
+        unset( $config['allowed_domain'] );
+        $encoded = SNW_Embed_Generator::encode_config( $config );
         return '<div class="steigerwald-news-widget" data-config="' . esc_attr( $encoded ) . '"></div>';
     }
 

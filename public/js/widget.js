@@ -866,19 +866,32 @@
             credentials: 'omit',
             headers: { 'Accept': 'application/json' }
         }).then(function (res) {
-            if (!res.ok) { throw new Error('HTTP ' + res.status); }
+            if (!res.ok) {
+                var msg = 'HTTP ' + res.status;
+                return res.json().then(function (err) {
+                    if (err && err.message) { msg = err.message; }
+                    return msg;
+                }, function () {
+                    return msg;
+                }).then(function (m) {
+                    throw new Error(m);
+                });
+            }
             return res.json();
         }).then(function (data) {
             var cfg = data.config || data;
             if (data.allowed_domain) { cfg.allowed_domain = data.allowed_domain; }
             if (typeof location !== 'undefined' && cfg.allowed_domain &&
                 !domainMatches(cfg.allowed_domain, location.hostname)) {
-                renderError(cfg, el, resolveTexts(cfg));
+                renderError(cfg, el, {
+                    error: 'Dieses Widget ist nur auf ' + cfg.allowed_domain + ' freigegeben.'
+                });
                 return;
             }
             build(cfg, el);
-        }).catch(function () {
-            renderError({ on_error: 'message' }, el, resolveTexts({}));
+        }).catch(function (e) {
+            var msg = (e && e.message) ? e.message : '';
+            renderError({ on_error: 'message' }, el, { error: msg || resolveTexts({}).error });
         });
     }
 

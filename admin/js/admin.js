@@ -476,9 +476,8 @@
         if (el) { el.textContent = msg || ''; }
     }
 
-    function embedSnippet(cfg) {
-        var encoded = W.encodeConfig(cfg);
-        return '<div class="steigerwald-news-widget" data-config="' + encoded + '"></div>\n' +
+    function tokenSnippet(code) {
+        return '<div class="steigerwald-news-widget" data-code="' + escapeHtml(code) + '"></div>\n' +
             '<script src="' + L.widgetJsUrl + '" async><\/script>';
     }
 
@@ -526,16 +525,32 @@
             .catch(function () { setStatus(I.saveError || 'Fehler.'); });
     }
 
-    function copyCurrent() {
-        copyText(embedSnippet(getConfig())).then(function () {
+    function copyToken(id) {
+        copyText(tokenSnippet(id)).then(function () {
             setStatus(I.copied || 'Kopiert.');
         }).catch(function () { setStatus(I.copyError || 'Kopieren fehlgeschlagen.'); });
     }
 
-    function copyPreset(cfg) {
-        copyText(embedSnippet(cfg)).then(function () {
-            setStatus(I.copied || 'Kopiert.');
-        }).catch(function () { setStatus(I.copyError || 'Kopieren fehlgeschlagen.'); });
+    function copyCurrent() {
+        if (state.currentId) {
+            copyToken(state.currentId);
+            return;
+        }
+        var cfg = getConfig();
+        var name = $('#snw-name').value.trim() || (I.untitled || 'Unbenanntes Widget');
+        state.name = name;
+        setStatus('');
+        ajax('snw_save_preset', { name: name, config: JSON.stringify(cfg), id: '' })
+            .then(function (res) {
+                if (res.success) {
+                    state.currentId = res.data.id;
+                    $('#snw-widget-id').value = (res.data.config && res.data.config.widget_id) || '';
+                    copyToken(state.currentId);
+                } else {
+                    setStatus(I.saveError || 'Fehler.');
+                }
+            })
+            .catch(function () { setStatus(I.saveError || 'Fehler.'); });
     }
 
     function loadPresets() {
@@ -587,7 +602,7 @@
         } else if (btn.classList.contains('snw-act-duplicate')) {
             ajax('snw_duplicate_preset', { id: id }).then(function () { loadPresets(); });
         } else if (btn.classList.contains('snw-act-copy') && preset) {
-            copyPreset(preset.config);
+            copyToken(preset.id);
         } else if (btn.classList.contains('snw-act-delete')) {
             if (window.confirm(I.confirmDelete || 'Wirklich löschen?')) {
                 ajax('snw_delete_preset', { id: id }).then(function () {
