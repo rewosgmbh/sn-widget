@@ -146,27 +146,44 @@ class SNW_Admin {
             $clicks       = isset( $kpis['clicks'] ) ? (int) $kpis['clicks'] : '';
         }
 
-        $stat = function ( $num, $label ) {
-            return '<div class="snw-dash-stat"><div class="snw-dash-stat__num">' . esc_html( $num ) . '</div>' .
+        $num = function ( $v ) {
+            return ( '' === $v || null === $v ) ? '–' : esc_html( (string) $v );
+        };
+
+        $icon = function ( $name ) {
+            return '<span class="snw-dash-stat__icon dashicons dashicons-' . $name . '" aria-hidden="true"></span>';
+        };
+
+        $stat = function ( $value, $label, $dashicon, $mod = '' ) use ( $num, $icon ) {
+            $cls = 'snw-dash-stat' . ( $mod ? ' ' . $mod : '' );
+            $dot = ( 'snw-dash-stat--alert' === $mod ) ? '<span class="snw-dash-stat__dot" aria-hidden="true"></span>' : '';
+            return '<div class="' . $cls . '">' . $dot . $icon( $dashicon ) .
+                '<div class="snw-dash-stat__num">' . $num( $value ) . '</div>' .
                 '<div class="snw-dash-stat__label">' . esc_html( $label ) . '</div></div>';
         };
 
+        $ctr = '';
+        if ( is_numeric( $loads ) && $loads > 0 && is_numeric( $clicks ) ) {
+            $ctr = number_format( ( $clicks / $loads ) * 100, 1, ',', '.' ) . ' %';
+        }
+
         echo '<div class="snw-dash-widget">';
-        echo '<div class="snw-dash-stat-row">';
-        echo $stat( count( $presets ), __( 'Widgets', 'steigerwald-news-widget' ) );
-        echo $stat( $partners, __( 'Partner', 'steigerwald-news-widget' ) );
-        echo $stat( $pending, __( 'Offen', 'steigerwald-news-widget' ) );
+        echo '<div class="snw-dash-grid">';
+        echo $stat( count( $presets ), __( 'Widgets', 'steigerwald-news-widget' ), 'grid-view' );
+        echo $stat( $partners, __( 'Partner', 'steigerwald-news-widget' ), 'groups' );
+        echo $stat( $pending, __( 'Offene Anfragen', 'steigerwald-news-widget' ), 'bell', $pending > 0 ? 'snw-dash-stat--alert' : '' );
+        echo $stat( $builder_uses, __( 'Builder-Nutzung', 'steigerwald-news-widget' ), 'admin-customizer' );
+        echo $stat( $loads, __( 'Aufrufe', 'steigerwald-news-widget' ), 'visibility', 'snw-dash-stat--accent' );
+        echo $stat( $clicks, __( 'Klicks', 'steigerwald-news-widget' ), 'admin-links', 'snw-dash-stat--accent' );
         echo '</div>';
-        echo '<div class="snw-dash-stat-row">';
-        echo $stat( $builder_uses, __( 'Builder-Nutzungen', 'steigerwald-news-widget' ) );
-        echo $stat( $loads, __( 'Aufrufe', 'steigerwald-news-widget' ) );
-        echo $stat( $clicks, __( 'Klicks', 'steigerwald-news-widget' ) );
+        if ( $ctr ) {
+            echo '<p class="snw-dash-ctr">' . esc_html__( 'CTR', 'steigerwald-news-widget' ) . ' ' . esc_html( $ctr ) . '</p>';
+        }
+        echo '<div class="snw-dash-actions">';
+        echo '<a class="button button-primary" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-stats' ) ) . '">' . esc_html__( 'Statistik ansehen', 'steigerwald-news-widget' ) . '</a>';
+        echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-partners' ) ) . '">' . esc_html__( 'Partner verwalten', 'steigerwald-news-widget' ) . '</a>';
         echo '</div>';
-        echo '<p class="snw-dash-widget__links">';
-        echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-stats' ) ) . '">' . esc_html__( 'Statistik', 'steigerwald-news-widget' ) . '</a> ';
-        echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-partners' ) ) . '">' . esc_html__( 'Partner', 'steigerwald-news-widget' ) . '</a>';
-        echo '</p>';
-        echo '<p class="snw-dash-widget__brand">';
+        echo '<p class="snw-dash-foot">';
         printf(
             esc_html__( 'Bereitgestellt von %s', 'steigerwald-news-widget' ),
             '<a href="' . esc_url( 'https://ld3.ottili.one' ) . '" target="_blank" rel="noopener">Ottili LD3</a>'

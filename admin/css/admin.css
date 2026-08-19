@@ -885,62 +885,99 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     margin: 8px 0 3px;
 }
 
-/* WordPress dashboard widget (compact statistics summary). */
+/* WordPress dashboard widget (compact analytics KPI summary). */
 #snw_dashboard_widget .snw-dash-widget {
     margin: 0 -12px -12px;
     padding: 4px 12px 14px;
 }
-#snw_dashboard_widget .snw-dash-stat-row {
+#snw_dashboard_widget .snw-dash-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin: 12px 0;
+    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+    gap: 10px;
+    margin: 6px 0 4px;
 }
 #snw_dashboard_widget .snw-dash-stat {
-    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
     background: #fff;
     border: 1px solid #e2e4e7;
-    border-top: 3px solid #2271b1;
-    border-radius: 6px;
-    padding: 12px 6px 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 10px 10px 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+#snw_dashboard_widget .snw-dash-stat__icon {
+    font-size: 15px;
+    line-height: 1;
+    color: #8c8f94;
+    margin-bottom: 2px;
 }
 #snw_dashboard_widget .snw-dash-stat__num {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
     color: #1d2327;
     line-height: 1.1;
 }
 #snw_dashboard_widget .snw-dash-stat__label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: 11px;
     color: #646970;
-    margin-top: 5px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
 }
-#snw_dashboard_widget .snw-dash-widget__links {
+#snw_dashboard_widget .snw-dash-stat--accent {
+    background: #f6fafd;
+    border-color: #cfe3f3;
+}
+#snw_dashboard_widget .snw-dash-stat--accent .snw-dash-stat__num {
+    color: #2271b1;
+}
+#snw_dashboard_widget .snw-dash-stat--alert .snw-dash-stat__num {
+    color: #b26200;
+}
+#snw_dashboard_widget .snw-dash-stat__dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #db8a00;
+    box-shadow: 0 0 0 3px rgba(219, 138, 0, 0.15);
+}
+#snw_dashboard_widget .snw-dash-ctr {
+    margin: 2px 2px 8px;
+    font-size: 11px;
+    color: #646970;
+    text-align: right;
+}
+#snw_dashboard_widget .snw-dash-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin: 4px 0 10px;
 }
-#snw_dashboard_widget .snw-dash-widget__links .button {
-    flex: 1;
-    text-align: center;
+#snw_dashboard_widget .snw-dash-actions .button {
+    flex: 1 1 0;
+    min-width: 0;
     margin: 0;
+    text-align: center;
+    justify-content: center;
 }
-#snw_dashboard_widget .snw-dash-widget__brand {
+#snw_dashboard_widget .snw-dash-foot {
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f1;
     font-size: 11px;
     color: #a7aaad;
     text-align: center;
-    border-top: 1px solid #f0f0f1;
-    padding-top: 8px;
-    margin: 0;
 }
-#snw_dashboard_widget .snw-dash-widget__brand a {
+#snw_dashboard_widget .snw-dash-foot a {
     color: #a7aaad;
     text-decoration: none;
 }
-#snw_dashboard_widget .snw-dash-widget__brand a:hover {
+#snw_dashboard_widget .snw-dash-foot a:hover {
     color: #787c82;
     text-decoration: underline;
 }
