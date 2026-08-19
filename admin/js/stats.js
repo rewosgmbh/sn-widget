@@ -274,6 +274,7 @@
             grid.appendChild(kpiCard(t('ctr'), fmtPct(k.ctr), fmtDelta(k.ctr, prev.ctr)));
             grid.appendChild(kpiCard(t('viewability'), fmtPct(k.viewability_rate), fmtDelta(k.viewability_rate, prev.viewability_rate)));
             grid.appendChild(kpiCard(t('activeWidgets'), fmtNum(k.active_widgets)));
+            grid.appendChild(kpiCard(t('builderUses'), fmtNum(k.builder_uses), fmtDelta(k.builder_uses, prev.builder_uses)));
             panel.appendChild(grid);
 
             // Charts.
@@ -352,7 +353,7 @@
             var statusText = { active: t('active'), idle: t('idle'), removed: t('removed'), unknown: t('unknown') };
             tr.innerHTML =
                 '<td><strong>' + esc(r.widget_id) + '</strong></td>' +
-                '<td>' + esc(r.partner) + '</td>' +
+                '<td>' + esc(r.partner) + (r.partner_name ? '<br><small>' + esc(r.partner_name) + '</small>' : '') + '</td>' +
                 '<td>' + fmtNum(r.loads) + '</td>' +
                 '<td>' + fmtNum(r.viewable) + '</td>' +
                 '<td>' + fmtNum(r.unique) + '</td>' +
@@ -499,7 +500,7 @@
             if (!(rows || []).length) { tb.innerHTML = '<tr><td colspan="8">' + esc(t('noData')) + '</td></tr>'; }
             (rows || []).forEach(function (r) {
                 var tr = el('tr');
-                tr.innerHTML = '<td>' + esc(r.partner) + '</td><td>' + fmtNum(r.widgets) + '</td>' +
+                tr.innerHTML = '<td>' + esc(r.partner) + (r.name ? '<br><small>' + esc(r.name) + '</small>' : '') + '</td><td>' + fmtNum(r.widgets) + '</td>' +
                     '<td>' + fmtNum(r.loads) + '</td><td>' + fmtNum(r.viewable) + '</td><td>' + fmtNum(r.clicks) + '</td>' +
                     '<td>' + fmtPct(r.ctr) + '</td><td>' + fmtPct(r.viewability) + '</td><td>' + fmtNum(r.unique) + '</td>';
                 tb.appendChild(tr);
