@@ -888,36 +888,59 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 /* WordPress dashboard widget (compact statistics summary). */
 #snw_dashboard_widget .snw-dash-widget {
     margin: 0 -12px -12px;
+    padding: 4px 12px 14px;
 }
 #snw_dashboard_widget .snw-dash-stat-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    flex-wrap: wrap;
-    margin: 8px 0;
+    margin: 12px 0;
 }
 #snw_dashboard_widget .snw-dash-stat {
-    flex: 1 1 28%;
-    min-width: 70px;
     text-align: center;
-    background: #f6f7f7;
-    border: 1px solid #c3c4c7;
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-top: 3px solid #2271b1;
     border-radius: 6px;
-    padding: 10px 4px;
+    padding: 12px 6px 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 #snw_dashboard_widget .snw-dash-stat__num {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
+    color: #1d2327;
     line-height: 1.1;
 }
 #snw_dashboard_widget .snw-dash-stat__label {
-    font-size: 11px;
-    color: #50575e;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #646970;
+    margin-top: 5px;
 }
 #snw_dashboard_widget .snw-dash-widget__links {
-    margin: 10px 0 4px;
+    display: flex;
+    gap: 8px;
+    margin: 4px 0 10px;
+}
+#snw_dashboard_widget .snw-dash-widget__links .button {
+    flex: 1;
+    text-align: center;
+    margin: 0;
 }
 #snw_dashboard_widget .snw-dash-widget__brand {
     font-size: 11px;
-    color: #787c82;
+    color: #a7aaad;
+    text-align: center;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 8px;
     margin: 0;
+}
+#snw_dashboard_widget .snw-dash-widget__brand a {
+    color: #a7aaad;
+    text-decoration: none;
+}
+#snw_dashboard_widget .snw-dash-widget__brand a:hover {
+    color: #787c82;
+    text-decoration: underline;
 }

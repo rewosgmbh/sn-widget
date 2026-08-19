@@ -266,11 +266,14 @@ class SNW_Settings {
         $html      = '<div class="steigerwald-news-widget" data-code="' . $preset['id'] . '"></div>' . "\n" .
             '<script src="' . esc_url( SNW_Embed_Generator::script_url() ) . '" async></script>';
 
-        $site_name = get_bloginfo( 'name' );
-        $subject   = sprintf( __( 'Dein %s Widget', 'steigerwald-news-widget' ), $site_name );
-        $body      = __( "Hallo,\n\nhier ist der Einbettungscode für dein News-Widget:\n\n", 'steigerwald-news-widget' ) .
-            __( "HTML-Snippet (für beliebige Websites):\n", 'steigerwald-news-widget' ) .
-            $html . "\n\n" . __( 'Viele Grüße' . "\n" . 'Ottili — https://ld3.ottili.one', 'steigerwald-news-widget' );
+        $site_name       = get_bloginfo( 'name' );
+        $site_url        = home_url( '/' );
+        $partner_domain  = isset( $request['domain'] ) ? $request['domain'] : '';
+        $subject         = sprintf( __( 'Dein %s Widget', 'steigerwald-news-widget' ), $site_name );
+        $body            = __( "Hallo,\n\nhier ist der Einbettungscode für dein News-Widget:\n\n", 'steigerwald-news-widget' ) .
+            sprintf( __( "HTML-Snippet für Ihre Website %s:\n", 'steigerwald-news-widget' ), '"' . $partner_domain . '"' ) .
+            $html . "\n\n" .
+            sprintf( __( "Viele Grüße\n%s — %s", 'steigerwald-news-widget' ), $site_name, $site_url );
 
         $mailto = 'mailto:' . rawurlencode( $request['email'] ) .
             '?subject=' . rawurlencode( $subject ) .
