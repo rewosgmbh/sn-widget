@@ -84,9 +84,25 @@ class SNW_Assets {
      * @return void
      */
     public static function enqueue_admin( $hook ) {
-        if ( empty( $hook ) || false === strpos( $hook, 'steigerwald-news-widget' ) ) {
+        $is_plugin    = ( false !== strpos( $hook, 'steigerwald-news-widget' ) );
+        $is_dashboard = ( 'index.php' === $hook );
+
+        if ( ! $is_plugin && ! $is_dashboard ) {
             return;
         }
+
+        // The WordPress dashboard needs the admin stylesheet so the plugin's
+        // dashboard widget (KPI cards) is styled; no builder scripts required.
+        if ( $is_dashboard ) {
+            wp_enqueue_style(
+                self::ADMIN_CSS_HANDLE,
+                SNW_URL . 'admin/css/admin.css',
+                array(),
+                SNW_VERSION
+            );
+            return;
+        }
+
         if ( false !== strpos( $hook, 'steigerwald-news-widget-stats' ) ) {
             self::enqueue_stats();
         } else {
