@@ -433,7 +433,7 @@ console.log('Steigerwald-News Widget — render tests');
     setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
     var el = makeEl();
     var cfg = baseConfig({ show: { branding: true } });
-    cfg.branding = { name: 'Steigerwald-News', text: 'Aktuelles von', image: 'https://x/logo.png', image_size: 48, link: 'https://x/brand' };
+    cfg.branding = { name: 'Steigerwald-News', text: 'Aktuelles von', image: 'https://x/logo.png', image_size: 48, text_size: 20, link: 'https://x/brand' };
     return renderSync(el, cfg).then(function () {
         var name = findByClass(el, 'snw-branding__name');
         ok('branding custom name rendered', name.length === 1 && name[0]._text === 'Steigerwald-News');
@@ -444,6 +444,7 @@ console.log('Steigerwald-News Widget — render tests');
         ok('branding custom size applied', icon.length === 1 && icon[0].getAttribute('width') === '48' && icon[0].style.width === '48px');
         var brand = findByClass(el, 'snw-branding');
         ok('branding custom link applied', brand.length === 1 && brand[0].getAttribute('href') === 'https://x/brand?utm_source=asv&utm_medium=referral&utm_campaign=steigerwald_news_widget&utm_content=SNW-12345');
+        ok('branding text_size sets anchor font-size', brand.length === 1 && brand[0].style.fontSize === '20px');
     });
 })();
 

@@ -250,6 +250,9 @@
     function updatePreview() {
         if (!W || !W.encodeConfig) { return; }
         var cfg = getConfig();
+        if (L && L.branding) {
+            cfg = Object.assign({}, cfg, { branding: L.branding });
+        }
         var raw = $('#snw-raw');
         if (raw) { raw.value = JSON.stringify(cfg, null, 2); }
         var el = $('#snw-preview');
@@ -1233,12 +1236,14 @@
         var textInput = $('#snw-branding-text');
         var nameInput = $('#snw-branding-name');
         var linkInput = $('#snw-branding-link');
+        var textSizeInput = $('#snw-branding-text-size');
 
         function buildPreview() {
             var text = textInput.value.trim() || (I.brandingText || 'Nachrichten von');
             var name = nameInput.value.trim() || srcName;
             if (!name) { return; }
             var size = parseInt(sizeInput.value, 10) || 32;
+            var textSize = parseInt(textSizeInput.value, 10) || 14;
             var img = imgInput.value.trim() || (srcUrl ? srcUrl.replace(/\/+$/, '') + '/favicon.ico' : '');
             var link = linkInput.value.trim() || srcUrl || '#';
             var root = preview ? preview.querySelector('.snw-root') : null;
@@ -1246,6 +1251,7 @@
             root.innerHTML = '';
             var a = document.createElement('a');
             a.className = 'snw-branding';
+            a.style.fontSize = textSize + 'px';
             a.setAttribute('href', link);
             a.setAttribute('target', '_blank');
             a.setAttribute('rel', 'noopener noreferrer');
@@ -1274,7 +1280,7 @@
             root.appendChild(a);
         }
 
-        [sizeInput, imgInput, textInput, nameInput, linkInput].forEach(function (el) {
+        [sizeInput, imgInput, textInput, nameInput, linkInput, textSizeInput].forEach(function (el) {
             if (el) { el.addEventListener('input', buildPreview); }
         });
 
@@ -1298,6 +1304,7 @@
                 ajax('snw_save_branding', {
                     image: imgInput.value.trim(),
                     image_size: sizeInput.value,
+                    text_size: textSizeInput.value,
                     text: textInput.value.trim(),
                     name: nameInput.value.trim(),
                     link: linkInput.value.trim()

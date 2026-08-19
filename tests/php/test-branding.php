@@ -57,17 +57,20 @@ snw_assert('default image_size 32', $def['image_size'] === 32);
 snw_assert('default text Nachrichten von', $def['text'] === 'Nachrichten von');
 snw_assert('default name empty (-> site title)', $def['name'] === '');
 snw_assert('default link empty (-> home)', $def['link'] === '');
+snw_assert('default text_size 14', $def['text_size'] === 14);
 
 // --- default_config branding block ---
 $dc = SNW_Helpers::default_config();
 snw_assert('default_config branding present', isset($dc['branding']) && is_array($dc['branding']));
 snw_assert('default_config branding size 32', $dc['branding']['image_size'] === 32);
+snw_assert('default_config branding text_size 14', $dc['branding']['text_size'] === 14);
 
 // --- sanitize_config branding ---
 $raw = array(
     'branding' => array(
         'image' => 'https://example.com/logo.png',
         'image_size' => 9999,
+        'text_size' => 9999,
         'text' => '  <b>News</b> von ',
         'name' => '  Mein Name ',
         'link' => 'https://example.com/start',
@@ -76,6 +79,7 @@ $raw = array(
 $san = SNW_Helpers::sanitize_config($raw);
 snw_assert('sanitize branding image kept', $san['branding']['image'] === 'https://example.com/logo.png');
 snw_assert('sanitize branding image_size clamped to 256', $san['branding']['image_size'] === 256);
+snw_assert('sanitize branding text_size clamped to 64', $san['branding']['text_size'] === 64);
 snw_assert('sanitize branding text strips tags', $san['branding']['text'] === 'News von');
 snw_assert('sanitize branding name trimmed', $san['branding']['name'] === 'Mein Name');
 snw_assert('sanitize branding link kept', $san['branding']['link'] === 'https://example.com/start');
@@ -85,6 +89,7 @@ SNW_Settings::save_branding(array(
     'name' => 'Steigerwald-News',
     'image' => 'https://example.com/w.png',
     'image_size' => 40,
+    'text_size' => 18,
     'text' => 'Aktuelles von',
     'link' => 'https://example.com/',
 ));
@@ -92,6 +97,7 @@ $g = SNW_Settings::get_branding();
 snw_assert('saved name read back', $g['name'] === 'Steigerwald-News');
 snw_assert('saved image read back', $g['image'] === 'https://example.com/w.png');
 snw_assert('saved size read back', $g['image_size'] === 40);
+snw_assert('saved text_size read back', $g['text_size'] === 18);
 snw_assert('saved text read back', $g['text'] === 'Aktuelles von');
 snw_assert('saved link read back', $g['link'] === 'https://example.com/');
 snw_assert('unsaved key falls back to default', $g['image_size'] === 40); // set; sanity
@@ -100,12 +106,17 @@ snw_assert('unsaved key falls back to default', $g['image_size'] === 40); // set
 SNW_Settings::save_branding(array('image_size' => 9999));
 snw_assert('save clamps size to 256', SNW_Settings::get_branding()['image_size'] === 256);
 
+// --- save_branding clamps text_size upper bound ---
+SNW_Settings::save_branding(array('text_size' => 9999));
+snw_assert('save clamps text_size to 64', SNW_Settings::get_branding()['text_size'] === 64);
+
 // --- apply_branding fills missing from global, respects existing ---
 SNW_Settings::save_branding(array(
     'name' => 'Global Name',
     'text' => 'Global Text',
     'image' => 'https://example.com/g.png',
     'image_size' => 48,
+    'text_size' => 22,
     'link' => 'https://example.com/global',
 ));
 $blank = SNW_Helpers::apply_branding(array());
@@ -113,6 +124,7 @@ snw_assert('apply fills name from global', $blank['branding']['name'] === 'Globa
 snw_assert('apply fills text from global', $blank['branding']['text'] === 'Global Text');
 snw_assert('apply fills image from global', $blank['branding']['image'] === 'https://example.com/g.png');
 snw_assert('apply fills size from global', $blank['branding']['image_size'] === 48);
+snw_assert('apply fills text_size from global', $blank['branding']['text_size'] === 22);
 snw_assert('apply fills link from global', $blank['branding']['link'] === 'https://example.com/global');
 
 $over = SNW_Helpers::apply_branding(array('branding' => array('name' => 'Widget Name', 'text' => 'Widget Text')));

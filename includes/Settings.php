@@ -49,6 +49,7 @@ class SNW_Settings {
         return array(
             'image'      => '',
             'image_size' => 32,
+            'text_size'  => 14,
             'text'       => __( 'Nachrichten von', 'steigerwald-news-widget' ),
             'name'       => '',
             'link'       => '',
@@ -83,6 +84,9 @@ class SNW_Settings {
         }
         if ( isset( $input['image_size'] ) ) {
             $clean['image_size'] = SNW_Helpers::clamp_int( $input['image_size'], 8, 256, 32 );
+        }
+        if ( isset( $input['text_size'] ) ) {
+            $clean['text_size'] = SNW_Helpers::clamp_int( $input['text_size'], 8, 64, 14 );
         }
         if ( isset( $input['text'] ) && is_string( $input['text'] ) ) {
             $clean['text'] = sanitize_text_field( $input['text'] );

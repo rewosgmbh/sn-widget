@@ -82,6 +82,7 @@ class SNW_Helpers {
             'branding'       => array(
                 'image'      => '',
                 'image_size' => 32,
+                'text_size'  => 14,
                 'text'       => 'Nachrichten von',
                 'name'       => '',
                 'link'       => '',
@@ -177,6 +178,9 @@ class SNW_Helpers {
             }
             if ( isset( $b['image_size'] ) ) {
                 $cfg['branding']['image_size'] = self::clamp_int( $b['image_size'], 8, 256, 32 );
+            }
+            if ( isset( $b['text_size'] ) ) {
+                $cfg['branding']['text_size'] = self::clamp_int( $b['text_size'], 8, 64, 14 );
             }
             if ( isset( $b['text'] ) && is_string( $b['text'] ) ) {
                 $cfg['branding']['text'] = sanitize_text_field( $b['text'] );

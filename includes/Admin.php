@@ -587,6 +587,14 @@ class SNW_Admin {
                             </td>
                         </tr>
                         <tr>
+                            <th scope="row"><?php echo esc_html__( 'Textgröße (px)', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="number" id="snw-branding-text-size" class="small-text" min="8" max="64" step="1"
+                                    value="<?php echo esc_attr( (string) (int) $b['text_size'] ); ?>">
+                                <p class="description"><?php echo esc_html__( 'Schriftgröße des Brandings. Standard 14 px. Der Text skaliert mit dem Bild.', 'steigerwald-news-widget' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
                             <th scope="row"><?php echo esc_html__( 'Branding-Text', 'steigerwald-news-widget' ); ?></th>
                             <td>
                                 <input type="text" id="snw-branding-text" class="regular-text"

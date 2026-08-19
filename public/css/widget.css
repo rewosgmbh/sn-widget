@@ -202,7 +202,6 @@
     padding-top: 10px;
     border-top: 1px solid var(--snw-border);
     color: var(--snw-muted);
-    font-size: .78em;
     text-decoration: none;
     transition: color .15s ease;
 }
@@ -213,8 +212,10 @@
 
 .steigerwald-news-widget .snw-branding__icon {
     flex: none;
-    width: 32px;
-    height: 32px;
+    width: auto;
+    height: auto;
+    max-width: 256px;
+    max-height: 256px;
     border-radius: 4px;
     object-fit: contain;
     background: rgba(127, 127, 127, .12);
@@ -228,14 +229,14 @@
 }
 
 .steigerwald-news-widget .snw-branding__text {
-    font-size: .92em;
+    font-size: .9em;
     color: var(--snw-muted);
 }
 
 .steigerwald-news-widget .snw-branding__name {
     font-weight: 700;
     color: var(--snw-text);
-    font-size: 1.06em;
+    font-size: 1.08em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
