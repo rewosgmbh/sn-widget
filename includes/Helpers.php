@@ -79,6 +79,13 @@ class SNW_Helpers {
             'empty_label'    => '',
             'error_label'    => '',
             'on_error'       => 'message',
+            'branding'       => array(
+                'image'      => '',
+                'image_size' => 32,
+                'text'       => 'Nachrichten von',
+                'name'       => '',
+                'link'       => '',
+            ),
         );
     }
 
@@ -157,6 +164,28 @@ class SNW_Helpers {
                 if ( isset( $raw['show'][ $key ] ) ) {
                     $cfg['show'][ $key ] = (bool) $raw['show'][ $key ];
                 }
+            }
+        }
+
+        // Branding sub-map (Widget-Quellenhinweis). Individual keys are kept
+        // when present so a per-widget override can win; missing keys fall back
+        // to the global admin setting at embed time (see apply_branding()).
+        if ( isset( $raw['branding'] ) && is_array( $raw['branding'] ) ) {
+            $b = $raw['branding'];
+            if ( isset( $b['image'] ) && is_string( $b['image'] ) ) {
+                $cfg['branding']['image'] = esc_url_raw( trim( $b['image'] ) );
+            }
+            if ( isset( $b['image_size'] ) ) {
+                $cfg['branding']['image_size'] = self::clamp_int( $b['image_size'], 8, 256, 32 );
+            }
+            if ( isset( $b['text'] ) && is_string( $b['text'] ) ) {
+                $cfg['branding']['text'] = sanitize_text_field( $b['text'] );
+            }
+            if ( isset( $b['name'] ) && is_string( $b['name'] ) ) {
+                $cfg['branding']['name'] = sanitize_text_field( $b['name'] );
+            }
+            if ( isset( $b['link'] ) && is_string( $b['link'] ) ) {
+                $cfg['branding']['link'] = esc_url_raw( trim( $b['link'] ) );
             }
         }
 
@@ -246,6 +275,36 @@ class SNW_Helpers {
         $cfg['v'] = 1;
 
         return $cfg;
+    }
+
+    /**
+     * Merge the global admin branding setting into a widget config.
+     *
+     * Branding is a site-wide setting configured in the admin. It is injected at
+     * embed/output time (not stored inside each preset) so changes propagate to
+     * already-embedded partner sites without re-copying the snippet. A key that
+     * is already present on the config wins; only empty/missing keys are filled
+     * from the global setting.
+     *
+     * @param array $config
+     * @return array
+     */
+    public static function apply_branding( $config ) {
+        if ( ! is_array( $config ) ) {
+            return $config;
+        }
+        if ( ! class_exists( 'SNW_Settings' ) || ! method_exists( 'SNW_Settings', 'get_branding' ) ) {
+            return $config;
+        }
+        $global = SNW_Settings::get_branding();
+        $b      = ( isset( $config['branding'] ) && is_array( $config['branding'] ) ) ? $config['branding'] : array();
+        foreach ( array( 'image', 'image_size', 'text', 'name', 'link' ) as $key ) {
+            if ( ! isset( $b[ $key ] ) || $b[ $key ] === '' || $b[ $key ] === null ) {
+                $b[ $key ] = isset( $global[ $key ] ) ? $global[ $key ] : '';
+            }
+        }
+        $config['branding'] = $b;
+        return $config;
     }
 
     /**

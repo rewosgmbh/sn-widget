@@ -63,6 +63,7 @@ class SNW_Embed_Generator {
      */
     public static function generate( $config, $script_url ) {
         $config      = SNW_Helpers::sanitize_config( $config );
+        $config      = SNW_Helpers::apply_branding( $config );
         $encoded     = self::encode_config( $config );
         $script_url  = esc_url( $script_url );
 

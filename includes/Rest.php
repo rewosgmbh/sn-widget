@@ -170,6 +170,8 @@ class SNW_REST {
             $config['allowed_domain'] = $allowed;
         }
 
+        $config = SNW_Helpers::apply_branding( $config );
+
         return new WP_REST_Response( $config, 200 );
     }
 

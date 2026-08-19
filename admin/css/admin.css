@@ -944,3 +944,28 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
     color: #787c82;
     text-decoration: underline;
 }
+
+/* Settings page (global branding). */
+.snw-branding-preview-wrap {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.snw-branding-preview-wrap .description {
+    color: #646970;
+}
+#snw-branding-preview {
+    display: inline-block;
+    padding: 12px 14px;
+    border: 1px dashed #c3c4c7;
+    border-radius: 8px;
+    background: #fff;
+}
+.snw-msg {
+    margin-left: 10px;
+    font-weight: 600;
+}
+.snw-msg--ok { color: #1a7f37; }
+.snw-msg--err { color: #d63638; }

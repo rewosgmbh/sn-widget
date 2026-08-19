@@ -1148,6 +1148,7 @@
         if ($('#snw-builder-form')) { initBuilder(); }
         if ($('#snw-preset-table') || $('#snw-requests-panel')) { initManage(); }
         if ($('#snw-partners-list')) { initPartners(); }
+        if ($('#snw-branding-form')) { initSettings(); }
     }
 
     // ------------------------------------------------------------------
@@ -1214,6 +1215,108 @@
         var statusEl = $('#snw-partner-status');
         if (statusEl) { statusEl.addEventListener('change', render); }
         load();
+    }
+
+    // ------------------------------------------------------------------
+    // Settings page: global widget branding.
+    // ------------------------------------------------------------------
+    function initSettings() {
+        var form = $('#snw-branding-form');
+        if (!form) { return; }
+        var srcName = (L && L.sourceName) ? L.sourceName : '';
+        var srcUrl = (L && L.sourceUrl) ? L.sourceUrl : '';
+        var preview = $('#snw-branding-preview');
+        var msg = $('#snw-branding-msg');
+
+        var sizeInput = $('#snw-branding-size');
+        var imgInput = $('#snw-branding-image');
+        var textInput = $('#snw-branding-text');
+        var nameInput = $('#snw-branding-name');
+        var linkInput = $('#snw-branding-link');
+
+        function buildPreview() {
+            var text = textInput.value.trim() || (I.brandingText || 'Nachrichten von');
+            var name = nameInput.value.trim() || srcName;
+            if (!name) { return; }
+            var size = parseInt(sizeInput.value, 10) || 32;
+            var img = imgInput.value.trim() || (srcUrl ? srcUrl.replace(/\/+$/, '') + '/favicon.ico' : '');
+            var link = linkInput.value.trim() || srcUrl || '#';
+            var root = preview ? preview.querySelector('.snw-root') : null;
+            if (!root) { return; }
+            root.innerHTML = '';
+            var a = document.createElement('a');
+            a.className = 'snw-branding';
+            a.setAttribute('href', link);
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+            if (img) {
+                var ic = document.createElement('img');
+                ic.className = 'snw-branding__icon';
+                ic.setAttribute('src', img);
+                ic.setAttribute('alt', '');
+                ic.setAttribute('width', String(size));
+                ic.setAttribute('height', String(size));
+                ic.style.width = size + 'px';
+                ic.style.height = size + 'px';
+                a.appendChild(ic);
+            }
+            var meta = document.createElement('span');
+            meta.className = 'snw-branding__meta';
+            var t = document.createElement('span');
+            t.className = 'snw-branding__text';
+            t.textContent = text;
+            meta.appendChild(t);
+            var n = document.createElement('strong');
+            n.className = 'snw-branding__name';
+            n.textContent = name;
+            meta.appendChild(n);
+            a.appendChild(meta);
+            root.appendChild(a);
+        }
+
+        [sizeInput, imgInput, textInput, nameInput, linkInput].forEach(function (el) {
+            if (el) { el.addEventListener('input', buildPreview); }
+        });
+
+        var mediaBtn = $('#snw-branding-media');
+        if (mediaBtn && typeof wp !== 'undefined' && wp.media) {
+            mediaBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var frame = wp.media({ title: (I.selectImage || 'Bild auswählen'), multiple: false });
+                frame.on('select', function () {
+                    var att = frame.state().get('selection').first().toJSON();
+                    if (att && att.url) { imgInput.value = att.url; buildPreview(); }
+                });
+                frame.open();
+            });
+        }
+
+        var saveBtn = $('#snw-save-branding');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function () {
+                msg.textContent = '';
+                ajax('snw_save_branding', {
+                    image: imgInput.value.trim(),
+                    image_size: sizeInput.value,
+                    text: textInput.value.trim(),
+                    name: nameInput.value.trim(),
+                    link: linkInput.value.trim()
+                }).then(function (res) {
+                    if (res.success) {
+                        msg.textContent = I.brandingSaved || 'Branding gespeichert.';
+                        msg.className = 'snw-msg snw-msg--ok';
+                    } else {
+                        msg.textContent = I.brandingError || 'Speichern fehlgeschlagen.';
+                        msg.className = 'snw-msg snw-msg--err';
+                    }
+                }).catch(function () {
+                    msg.textContent = I.brandingError || 'Speichern fehlgeschlagen.';
+                    msg.className = 'snw-msg snw-msg--err';
+                });
+            });
+        }
+
+        buildPreview();
     }
 
     if (document.readyState === 'loading') {

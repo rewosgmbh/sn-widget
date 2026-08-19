@@ -86,6 +86,15 @@ class SNW_Admin {
             array( __CLASS__, 'render_partners' )
         );
 
+        add_submenu_page(
+            'steigerwald-news-widget',
+            __( 'Einstellungen', 'steigerwald-news-widget' ),
+            __( 'Einstellungen', 'steigerwald-news-widget' ),
+            'manage_options',
+            'steigerwald-news-widget-settings',
+            array( __CLASS__, 'render_settings' )
+        );
+
         // WordPress dashboard widget with a compact statistics summary.
         add_action( 'wp_dashboard_setup', array( __CLASS__, 'register_dashboard_widget' ) );
 
@@ -527,6 +536,114 @@ class SNW_Admin {
             </p>
 
             <div id="snw-partners-list"></div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the global branding settings page.
+     *
+     * @return void
+     */
+    public static function render_settings() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'Keine Berechtigung.', 'steigerwald-news-widget' ) );
+        }
+        $b         = SNW_Settings::get_branding();
+        $site_name = get_bloginfo( 'name' );
+        $home      = home_url( '/' );
+        $img_src   = $b['image'] ? $b['image'] : $home . 'favicon.ico';
+        $link      = $b['link'] ? $b['link'] : $home;
+        $name      = $b['name'] ? $b['name'] : $site_name;
+        ?>
+        <div class="wrap snw-wrap">
+            <h1><?php echo esc_html__( 'Einstellungen', 'steigerwald-news-widget' ); ?></h1>
+            <p class="snw-intro">
+                <?php echo esc_html__( 'Branding des Widgets: Bild, Größe, Text und verlinkter Markenname. Diese Einstellung gilt für alle ausgespielten Widgets.', 'steigerwald-news-widget' ); ?>
+            </p>
+
+            <form id="snw-branding-form" class="snw-settings" method="post">
+                <table class="form-table" role="presentation">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><?php echo esc_html__( 'Branding-Bild', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="url" id="snw-branding-image" class="regular-text" placeholder="https://…"
+                                    value="<?php echo esc_attr( $b['image'] ); ?>">
+                                <button type="button" id="snw-branding-media" class="button">
+                                    <?php echo esc_html__( 'Aus Mediathek wählen', 'steigerwald-news-widget' ); ?>
+                                </button>
+                                <p class="description">
+                                    <?php echo esc_html__( 'Leer = Standard-Favicon (/favicon.ico). Eigenes Bild aus der Mediathek oder per URL.', 'steigerwald-news-widget' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php echo esc_html__( 'Bildgröße (px)', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="number" id="snw-branding-size" class="small-text" min="8" max="256" step="1"
+                                    value="<?php echo esc_attr( (string) (int) $b['image_size'] ); ?>">
+                                <p class="description"><?php echo esc_html__( 'Empfohlen 24–64 px. Standard 32 px.', 'steigerwald-news-widget' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php echo esc_html__( 'Branding-Text', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="text" id="snw-branding-text" class="regular-text"
+                                    value="<?php echo esc_attr( $b['text'] ); ?>">
+                                <p class="description"><?php echo esc_html__( 'Standard: „Nachrichten von".', 'steigerwald-news-widget' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php echo esc_html__( 'Marken-/Websitename', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="text" id="snw-branding-name" class="regular-text"
+                                    placeholder="<?php echo esc_attr( $site_name ); ?>"
+                                    value="<?php echo esc_attr( $b['name'] ); ?>">
+                                <p class="description">
+                                    <?php echo esc_html__( 'Leer = Website-Titel (', 'steigerwald-news-widget' ) . esc_html( $site_name ) . ').'; ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php echo esc_html__( 'Branding-Link', 'steigerwald-news-widget' ); ?></th>
+                            <td>
+                                <input type="url" id="snw-branding-link" class="regular-text"
+                                    placeholder="<?php echo esc_attr( $home ); ?>"
+                                    value="<?php echo esc_attr( $b['link'] ); ?>">
+                                <p class="description">
+                                    <?php echo esc_html__( 'Leer = Startseite (', 'steigerwald-news-widget' ) . esc_html( $home ) . ').'; ?>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="snw-branding-preview-wrap">
+                    <span class="description"><?php echo esc_html__( 'Vorschau:', 'steigerwald-news-widget' ); ?></span>
+                    <span class="steigerwald-news-widget" id="snw-branding-preview">
+                        <span class="snw-root">
+                            <a class="snw-branding" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer">
+                                <img class="snw-branding__icon" src="<?php echo esc_url( $img_src ); ?>"
+                                    alt="" width="<?php echo esc_attr( (string) (int) $b['image_size'] ); ?>"
+                                    height="<?php echo esc_attr( (string) (int) $b['image_size'] ); ?>"
+                                    style="width:<?php echo esc_attr( (string) (int) $b['image_size'] ); ?>px;height:<?php echo esc_attr( (string) (int) $b['image_size'] ); ?>px;">
+                                <span class="snw-branding__meta">
+                                    <span class="snw-branding__text"><?php echo esc_html( $b['text'] ); ?></span>
+                                    <strong class="snw-branding__name"><?php echo esc_html( $name ); ?></strong>
+                                </span>
+                            </a>
+                        </span>
+                    </span>
+                </p>
+
+                <p class="submit">
+                    <button type="button" id="snw-save-branding" class="button button-primary">
+                        <?php echo esc_html__( 'Speichern', 'steigerwald-news-widget' ); ?>
+                    </button>
+                    <span id="snw-branding-msg" class="snw-msg" role="status"></span>
+                </p>
+            </form>
         </div>
         <?php
     }

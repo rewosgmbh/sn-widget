@@ -17,8 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SNW_Settings {
 
-    const NONCE_ACTION = 'snw_admin';
-    const NONCE_FIELD  = 'snw_nonce';
+    const NONCE_ACTION    = 'snw_admin';
+    const NONCE_FIELD     = 'snw_nonce';
+    const BRANDING_OPTION = 'snw_branding';
 
     /**
      * Register AJAX actions (admin only).
@@ -36,6 +37,78 @@ class SNW_Settings {
         add_action( 'wp_ajax_snw_accept_request', array( __CLASS__, 'ajax_accept_request' ) );
         add_action( 'wp_ajax_snw_reject_request', array( __CLASS__, 'ajax_reject_request' ) );
         add_action( 'wp_ajax_snw_list_partners', array( __CLASS__, 'ajax_list_partners' ) );
+        add_action( 'wp_ajax_snw_save_branding', array( __CLASS__, 'ajax_save_branding' ) );
+    }
+
+    /**
+     * Default branding values (used when no option is stored yet).
+     *
+     * @return array
+     */
+    public static function default_branding() {
+        return array(
+            'image'      => '',
+            'image_size' => 32,
+            'text'       => __( 'Nachrichten von', 'steigerwald-news-widget' ),
+            'name'       => '',
+            'link'       => '',
+        );
+    }
+
+    /**
+     * Return the branding setting merged with defaults.
+     *
+     * @return array
+     */
+    public static function get_branding() {
+        $stored = get_option( self::BRANDING_OPTION, array() );
+        if ( ! is_array( $stored ) ) {
+            $stored = array();
+        }
+        return wp_parse_args( $stored, self::default_branding() );
+    }
+
+    /**
+     * Persist the branding setting (sanitized).
+     *
+     * @param array $input Raw input.
+     * @return array Clean values actually stored.
+     */
+    public static function save_branding( $input ) {
+        $input = is_array( $input ) ? $input : array();
+        $clean = self::default_branding();
+
+        if ( isset( $input['image'] ) && is_string( $input['image'] ) ) {
+            $clean['image'] = esc_url_raw( trim( $input['image'] ) );
+        }
+        if ( isset( $input['image_size'] ) ) {
+            $clean['image_size'] = SNW_Helpers::clamp_int( $input['image_size'], 8, 256, 32 );
+        }
+        if ( isset( $input['text'] ) && is_string( $input['text'] ) ) {
+            $clean['text'] = sanitize_text_field( $input['text'] );
+        }
+        if ( isset( $input['name'] ) && is_string( $input['name'] ) ) {
+            $clean['name'] = sanitize_text_field( $input['name'] );
+        }
+        if ( isset( $input['link'] ) && is_string( $input['link'] ) ) {
+            $clean['link'] = esc_url_raw( trim( $input['link'] ) );
+        }
+
+        update_option( self::BRANDING_OPTION, $clean, false );
+        return $clean;
+    }
+
+    /**
+     * AJAX: save the global branding setting.
+     *
+     * @return void
+     */
+    public static function ajax_save_branding() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+        $saved = self::save_branding( $_POST );
+        self::respond( true, $saved );
     }
 
     /**

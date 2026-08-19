@@ -27,6 +27,12 @@
 * **Branding & Texte:** E-Mail-Versand enthält keinen WP-Shortcode mehr (nur universelles HTML-Snippet); „Steigerwald-News" im Widget wird durch den Websitenamen ersetzt; Plugin-Autor „Ottili" mit Link `ld3.ottili.one`; „Erstellen"-Seite heißt „News Widget erstellen"; Favicon im Widget leicht vergrößert (22→26 px).
 * **Schema-Fix:** Die `daily`- und `widget_pages`-Telemetrie-Tabellen wurden wegen eines zu langen zusammengesetzten Primary-Keys (page_path 512 + host 255) unter utf8mb4 nie erstellt – `page_path` auf 255 reduziert, damit Statistik auf echten Installationen funktioniert.
 
+**Konfigurierbares Widget-Branding (Admin → Einstellungen):**
+
+* **Neue Einstellungsseite:** Branding-Bild (Standard `/favicon.ico`, alternativ eigene Datei aus der WordPress-Mediathek oder per URL), Bildgröße (frei, Standard 32 px), Branding-Text (Standard „Nachrichten von"), Marken-/Websitename (Standard = Website-Titel, frei überschreibbar) und Branding-Link (Standard = Startseite, frei überschreibbar).
+* **Darstellung:** `[Logo] Nachrichten von` gefolgt von der fett hervorgehobenen Marke in einer zweiten Zeile; das Bild wird sauber auf die konfigurierte Größe skaliert (`object-fit: contain`). Light/Dark-Mode und Responsive über die bestehenden CSS-Variablen/`@container`-Regeln.
+* **Globale Einstellung:** Das Branding wird an allen Ausspielwegen (Partner-Embed via `data-code`, Same-Site-Shortcode, Copy-Snippet) aus der globalen Option injiziert (`SNW_Helpers::apply_branding`) – Änderungen wirken ohne erneutes Einbetten auf bereits platzierten Widgets.
+
 ## 1.5.1
 
 **Public Builder – Layout & Live-Vorschau verfeinert:**

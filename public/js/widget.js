@@ -962,30 +962,47 @@
             root.appendChild(list);
         }
 
-        if (show.branding && config.source_name) {
+        if (show.branding) {
+            var b = (config.branding && typeof config.branding === 'object') ? config.branding : {};
             var base = (config.source_url || '').replace(/\/+$/, '');
+            var brandName = (typeof b.name === 'string' && b.name) ? b.name : (config.source_name || '');
+            var brandLink = (typeof b.link === 'string' && b.link) ? b.link : (config.source_url || '#');
+            var brandText = (typeof b.text === 'string' && b.text) ? b.text : (texts.branding || 'Nachrichten von');
+            var brandSize = (b.image_size && +b.image_size) ? parseInt(b.image_size, 10) : 32;
+            if (!brandName) {
+                return;
+            }
             var branding = document.createElement('a');
             branding.className = 'snw-branding';
-            branding.setAttribute('href', trackedUrl(base || '#', config.partner, config.widget_id));
+            branding.setAttribute('href', trackedUrl(brandLink, config.partner, config.widget_id));
             branding.setAttribute('target', '_blank');
             branding.setAttribute('rel', 'noopener noreferrer');
 
-            var favicon = base ? base + '/favicon.ico' : '';
-            if (favicon) {
+            var imgSrc = (typeof b.image === 'string' && b.image) ? b.image : (base ? base + '/favicon.ico' : '');
+            if (imgSrc) {
                 var icon = document.createElement('img');
                 icon.className = 'snw-branding__icon';
-                icon.setAttribute('src', favicon);
+                icon.setAttribute('src', imgSrc);
                 icon.setAttribute('alt', '');
-                icon.setAttribute('width', '26');
-                icon.setAttribute('height', '26');
+                icon.setAttribute('width', String(brandSize));
+                icon.setAttribute('height', String(brandSize));
                 icon.setAttribute('loading', 'lazy');
+                icon.style.width = brandSize + 'px';
+                icon.style.height = brandSize + 'px';
                 icon.addEventListener('error', function () { icon.style.display = 'none'; });
                 branding.appendChild(icon);
             }
-            branding.appendChild(document.createTextNode(texts.branding + ' '));
+            var meta = document.createElement('span');
+            meta.className = 'snw-branding__meta';
+            var txt = document.createElement('span');
+            txt.className = 'snw-branding__text';
+            txt.textContent = brandText;
+            meta.appendChild(txt);
             var bName = document.createElement('strong');
-            bName.textContent = config.source_name;
-            branding.appendChild(bName);
+            bName.className = 'snw-branding__name';
+            bName.textContent = brandName;
+            meta.appendChild(bName);
+            branding.appendChild(meta);
             root.appendChild(branding);
         }
 
@@ -1214,9 +1231,13 @@
         '.steigerwald-news-widget .snw-readmore{display:inline-block;margin-top:8px;font-size:.9em;font-weight:700;color:var(--snw-link);text-decoration:none;}',
         '.steigerwald-news-widget .snw-readmore::after{content:" →";}',
         '.steigerwald-news-widget .snw-readmore:hover{text-decoration:underline;}',
-        '.steigerwald-news-widget .snw-branding{margin:var(--snw-gap) 0 0;padding-top:10px;border-top:1px solid var(--snw-border);color:var(--snw-muted);font-size:.78em;}',
-        '.steigerwald-news-widget .snw-branding-link{color:var(--snw-muted);text-decoration:none;}',
-        '.steigerwald-news-widget .snw-branding-link:hover{text-decoration:underline;}',
+        '.steigerwald-news-widget .snw-branding{display:inline-flex;align-items:center;gap:8px;margin:var(--snw-gap) 0 0;padding-top:10px;border-top:1px solid var(--snw-border);color:var(--snw-muted);font-size:.78em;text-decoration:none;transition:color .15s ease;}',
+        '.steigerwald-news-widget .snw-branding:hover{color:var(--snw-link);}',
+        '.steigerwald-news-widget .snw-branding__icon{flex:none;width:32px;height:32px;border-radius:4px;object-fit:contain;background:rgba(127,127,127,.12);}',
+        '.steigerwald-news-widget .snw-branding__meta{display:flex;flex-direction:column;line-height:1.15;min-width:0;}',
+        '.steigerwald-news-widget .snw-branding__text{font-size:.92em;color:var(--snw-muted);}',
+        '.steigerwald-news-widget .snw-branding__name{font-weight:700;color:var(--snw-text);font-size:1.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+        '.steigerwald-news-widget .snw-branding:hover .snw-branding__name{color:var(--snw-link);}',
         '.steigerwald-news-widget .snw-state{margin:0;padding:10px 0;color:var(--snw-muted);font-size:.92em;}',
         '.steigerwald-news-widget[data-layout="cards"] .snw-list{grid-template-columns:repeat(var(--snw-columns,2),minmax(0,1fr));}',
         '.steigerwald-news-widget[data-layout="grid"] .snw-list{grid-template-columns:repeat(var(--snw-columns,2),minmax(0,1fr));}',

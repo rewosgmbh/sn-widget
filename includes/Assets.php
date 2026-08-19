@@ -43,9 +43,14 @@ class SNW_Assets {
             'restRequestUrl' => esc_url_raw( rest_url( 'snw/v1/request' ) ),
             'defaultConfig' => SNW_Helpers::default_config(),
             'presets'     => SNW_Presets::get_all(),
+            'branding'    => SNW_Settings::get_branding(),
             'i18n'        => array(
                 'saveOk'        => __( 'Widget gespeichert.', 'steigerwald-news-widget' ),
                 'saveError'     => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ),
+                'brandingSaved' => __( 'Branding gespeichert.', 'steigerwald-news-widget' ),
+                'brandingError' => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ),
+                'selectImage'   => __( 'Bild auswählen', 'steigerwald-news-widget' ),
+                'brandingText'  => __( 'Nachrichten von', 'steigerwald-news-widget' ),
                 'confirmDelete' => __( 'Dieses Widget wirklich löschen?', 'steigerwald-news-widget' ),
                 'copied'        => __( 'Code kopiert.', 'steigerwald-news-widget' ),
                 'copyError'     => __( 'Kopieren nicht möglich – bitte manuell auswählen.', 'steigerwald-news-widget' ),
@@ -86,6 +91,10 @@ class SNW_Assets {
             self::enqueue_stats();
         } else {
             self::enqueue_builder( $hook );
+        }
+
+        if ( false !== strpos( $hook, 'steigerwald-news-widget-settings' ) ) {
+            wp_enqueue_media();
         }
     }
 
