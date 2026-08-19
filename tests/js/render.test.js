@@ -410,6 +410,43 @@ console.log('Steigerwald-News Widget — render tests');
     });
 })();
 
+// --- Branding: configurable image / size / text / name / link ----------
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    return renderSync(el, baseConfig({ show: { branding: true } })).then(function () {
+        var brand = findByClass(el, 'snw-branding');
+        ok('branding anchor present', brand.length === 1);
+        var meta = findByClass(el, 'snw-branding__meta');
+        ok('branding meta (two-line) present', meta.length === 1);
+        var txt = findByClass(el, 'snw-branding__text');
+        ok('branding text rendered', txt.length === 1 && /Nachrichten von/.test(textOf(txt[0])));
+        var name = findByClass(el, 'snw-branding__name');
+        ok('branding name falls back to source_name', name.length === 1 && name[0]._text === 'Test');
+        var icon = findByClass(el, 'snw-branding__icon');
+        ok('branding icon default size 32', icon.length === 1 && icon[0].getAttribute('width') === '32' && icon[0].style.width === '32px');
+        ok('branding icon defaults to favicon.ico', icon.length === 1 && icon[0].getAttribute('src') === 'https://x/favicon.ico');
+    });
+})();
+
+(function () {
+    setMock([{ id: 1, date: '2026-08-17T10:00:00', link: 'https://x/a/1', title: { rendered: 'T' }, excerpt: { rendered: 'x' }, _embedded: {} }]);
+    var el = makeEl();
+    var cfg = baseConfig({ show: { branding: true } });
+    cfg.branding = { name: 'Steigerwald-News', text: 'Aktuelles von', image: 'https://x/logo.png', image_size: 48, link: 'https://x/brand' };
+    return renderSync(el, cfg).then(function () {
+        var name = findByClass(el, 'snw-branding__name');
+        ok('branding custom name rendered', name.length === 1 && name[0]._text === 'Steigerwald-News');
+        var txt = findByClass(el, 'snw-branding__text');
+        ok('branding custom text rendered', txt.length === 1 && /Aktuelles von/.test(textOf(txt[0])));
+        var icon = findByClass(el, 'snw-branding__icon');
+        ok('branding custom image used', icon.length === 1 && icon[0].getAttribute('src') === 'https://x/logo.png');
+        ok('branding custom size applied', icon.length === 1 && icon[0].getAttribute('width') === '48' && icon[0].style.width === '48px');
+        var brand = findByClass(el, 'snw-branding');
+        ok('branding custom link applied', brand.length === 1 && brand[0].getAttribute('href') === 'https://x/brand?utm_source=asv&utm_medium=referral&utm_campaign=steigerwald_news_widget&utm_content=SNW-12345');
+    });
+})();
+
 setTimeout(function () {
     console.log('\n' + pass + ' assertions passed, ' + fail + ' failed.');
     process.exit(fail > 0 ? 1 : 0);
