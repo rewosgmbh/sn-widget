@@ -889,12 +889,18 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 #snw_dashboard_widget .snw-dash-widget {
     margin: 0 -12px -12px;
     padding: 4px 12px 14px;
+    container-type: inline-size;
 }
 #snw_dashboard_widget .snw-dash-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin: 6px 0 4px;
+}
+@container (max-width: 260px) {
+    #snw_dashboard_widget .snw-dash-grid {
+        grid-template-columns: 1fr;
+    }
 }
 #snw_dashboard_widget .snw-dash-stat {
     position: relative;
