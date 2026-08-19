@@ -27,18 +27,36 @@ class SNW_Plugin {
         SNW_Settings::register();
         SNW_REST::init();
         SNW_Shortcode::init();
+        if ( class_exists( 'SNW_Telemetry' ) ) {
+            SNW_Telemetry::init();
+        }
 
         add_filter( 'plugin_action_links_' . plugin_basename( SNW_FILE ), array( __CLASS__, 'action_links' ) );
     }
 
     /**
-     * Plugin activation: create the public widget-builder page.
+     * Plugin activation: create the public widget-builder page and install
+     * the telemetry subsystem (tables, rewrite alias, cron).
      *
      * @return void
      */
     public static function activate() {
         if ( class_exists( 'SNW_Requests' ) ) {
             SNW_Requests::ensure_builder_page();
+        }
+        if ( class_exists( 'SNW_Telemetry' ) ) {
+            SNW_Telemetry::activate();
+        }
+    }
+
+    /**
+     * Plugin deactivation: stop the telemetry cron.
+     *
+     * @return void
+     */
+    public static function deactivate() {
+        if ( class_exists( 'SNW_Telemetry' ) ) {
+            SNW_Telemetry::deactivate();
         }
     }
 

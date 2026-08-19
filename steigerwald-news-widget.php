@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SNW_VERSION', '1.5.0' );
+define( 'SNW_VERSION', '1.6.0' );
 define( 'SNW_FILE', __FILE__ );
 define( 'SNW_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNW_URL', plugin_dir_url( __FILE__ ) );
@@ -40,6 +40,7 @@ require_once SNW_PATH . 'includes/Assets.php';
 require_once SNW_PATH . 'includes/Builder.php';
 require_once SNW_PATH . 'includes/Shortcode.php';
 require_once SNW_PATH . 'includes/Admin.php';
+require_once SNW_PATH . 'includes/Telemetry.php';
 require_once SNW_PATH . 'includes/Plugin.php';
 
 /**
@@ -47,4 +48,5 @@ require_once SNW_PATH . 'includes/Plugin.php';
  * that could break the host site.
  */
 register_activation_hook( __FILE__, array( 'SNW_Plugin', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'SNW_Plugin', 'deactivate' ) );
 add_action( 'plugins_loaded', array( 'SNW_Plugin', 'init' ) );

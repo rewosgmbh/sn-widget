@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.6.0
+
+**Internes Telemetrie- & Analytics-System (DSGVO-konform):**
+
+* **Neue Telemetry-API, strikt getrennt von WP Core REST:** Öffentlicher Alias `/sn-widget/telemetry/v1/*` → intern `wp-json/snw-telemetry/v1/*`. Event-Ingestion ist öffentlich (CORS), Analytics-Lesen ist `manage_options` + REST-Nonce abgesichert.
+* **Raw- vs. Viewable-Metriken:**
+  * `widget_load` — beim Initialisieren des Widgets (init).
+  * `viewable_impression` — erst bei ≥50 % sichtbarer Fläche für ≥1000 ms (IntersectionObserver), je max. 1 pro Instanz/Page-Load.
+  * `article_click` — Klick auf einen Artikel-Link (mit `article_id`/ `article_url`, aber ohne Profilbildung).
+* **Kein Fingerprinting, keine IP-Speicherung:** Besucher-Schlüssel ist ein server-seitiger HMAC (`wp_hash`) über `coarse UA + Rotations-Tagesbucket` — tagesgenaue Unique-Visitor-Zahlen ohne personenbezogene Daten.
+* **Server-seitige Aggregation:** Tägliche Rollups (`events` → `daily`) für abgeschlossene Tage; „heute" wird live aus den Rohdaten gelesen. Retention-Cleanup (Standard 365 Tage, filterbar).
+* **Dashboard „Statistik":** KPI-Karten (Aufrufe, Unique, Viewable-Rate, CTR), zwei SVG-Liniencharts (kein externes CDN), Top-Widgets/Seiten/Artikel/Partner, Widget-Detail-Modal, Realtime-Polling, Einstellungen + Debug, CSV-Export (admin-ajax).
+* **Robustes Client-Telemetry:** `sendBeacon`/`fetch`-keepalive, nie blockierend, bricht das Widget bei Ausfall nicht.
+* **Tests & CI:** PHP-Logiktests (44 Assertions), JS-Unit-Tests (Viewability/Formatierung), Playwright-Browser-Spec, GitHub Actions (Lint + Unit + Build-ZIP).
+
 ## 1.5.1
 
 **Public Builder – Layout & Live-Vorschau verfeinert:**
