@@ -23,7 +23,7 @@ class SNW_Admin {
      */
     public static function admin_menu() {
         add_menu_page(
-            __( 'Steigerwald-News Widget', 'steigerwald-news-widget' ),
+            __( 'News Widget', 'steigerwald-news-widget' ),
             __( 'News Widget', 'steigerwald-news-widget' ),
             'manage_options',
             'steigerwald-news-widget',
@@ -43,7 +43,7 @@ class SNW_Admin {
 
         add_submenu_page(
             'steigerwald-news-widget',
-            __( 'Widget erstellen', 'steigerwald-news-widget' ),
+            __( 'News Widget erstellen', 'steigerwald-news-widget' ),
             __( 'Erstellen', 'steigerwald-news-widget' ),
             'manage_options',
             'steigerwald-news-widget-create',
@@ -77,7 +77,93 @@ class SNW_Admin {
             array( __CLASS__, 'render_requests' )
         );
 
+        add_submenu_page(
+            'steigerwald-news-widget',
+            __( 'Partner', 'steigerwald-news-widget' ),
+            __( 'Partner', 'steigerwald-news-widget' ),
+            'manage_options',
+            'steigerwald-news-widget-partners',
+            array( __CLASS__, 'render_partners' )
+        );
+
+        // WordPress dashboard widget with a compact statistics summary.
+        add_action( 'wp_dashboard_setup', array( __CLASS__, 'register_dashboard_widget' ) );
+
         add_action( 'admin_enqueue_scripts', array( 'SNW_Assets', 'enqueue_admin' ) );
+    }
+
+    /**
+     * Register the plugin's WordPress dashboard widget.
+     *
+     * @return void
+     */
+    public static function register_dashboard_widget() {
+        wp_add_dashboard_widget(
+            'snw_dashboard_widget',
+            __( 'News Widget', 'steigerwald-news-widget' ),
+            array( __CLASS__, 'render_dashboard_widget' )
+        );
+    }
+
+    /**
+     * Compact statistics summary for the WordPress dashboard widget.
+     *
+     * @return void
+     */
+    public static function render_dashboard_widget() {
+        $presets  = SNW_Presets::get_all();
+        $requests = SNW_Requests::get_all();
+
+        $partners = 0;
+        foreach ( $presets as $p ) {
+            if ( ! empty( $p['email'] ) ) {
+                $partners++;
+            }
+        }
+        $pending = 0;
+        foreach ( $requests as $r ) {
+            if ( ( isset( $r['status'] ) ? $r['status'] : 'pending' ) === 'pending' ) {
+                $pending++;
+            }
+        }
+
+        $builder_uses = '';
+        $loads        = '';
+        $clicks       = '';
+        if ( class_exists( 'SNW_Telemetry' ) && method_exists( 'SNW_Telemetry', 'get_kpis' ) ) {
+            $kpis  = SNW_Telemetry::get_kpis( gmdate( 'Y-m-d', time() - 29 * DAY_IN_SECONDS ), gmdate( 'Y-m-d' ) );
+            $builder_uses = isset( $kpis['builder_uses'] ) ? (int) $kpis['builder_uses'] : '';
+            $loads        = isset( $kpis['raw_loads'] ) ? (int) $kpis['raw_loads'] : '';
+            $clicks       = isset( $kpis['clicks'] ) ? (int) $kpis['clicks'] : '';
+        }
+
+        $stat = function ( $num, $label ) {
+            return '<div class="snw-dash-stat"><div class="snw-dash-stat__num">' . esc_html( $num ) . '</div>' .
+                '<div class="snw-dash-stat__label">' . esc_html( $label ) . '</div></div>';
+        };
+
+        echo '<div class="snw-dash-widget">';
+        echo '<div class="snw-dash-stat-row">';
+        echo $stat( count( $presets ), __( 'Widgets', 'steigerwald-news-widget' ) );
+        echo $stat( $partners, __( 'Partner', 'steigerwald-news-widget' ) );
+        echo $stat( $pending, __( 'Offen', 'steigerwald-news-widget' ) );
+        echo '</div>';
+        echo '<div class="snw-dash-stat-row">';
+        echo $stat( $builder_uses, __( 'Builder-Nutzungen', 'steigerwald-news-widget' ) );
+        echo $stat( $loads, __( 'Aufrufe', 'steigerwald-news-widget' ) );
+        echo $stat( $clicks, __( 'Klicks', 'steigerwald-news-widget' ) );
+        echo '</div>';
+        echo '<p class="snw-dash-widget__links">';
+        echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-stats' ) ) . '">' . esc_html__( 'Statistik', 'steigerwald-news-widget' ) . '</a> ';
+        echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=steigerwald-news-widget-partners' ) ) . '">' . esc_html__( 'Partner', 'steigerwald-news-widget' ) . '</a>';
+        echo '</p>';
+        echo '<p class="snw-dash-widget__brand">';
+        printf(
+            esc_html__( 'Bereitgestellt von %s', 'steigerwald-news-widget' ),
+            '<a href="' . esc_url( 'https://ld3.ottili.one' ) . '" target="_blank" rel="noopener">Ottili LD3</a>'
+        );
+        echo '</p>';
+        echo '</div>';
     }
 
     /**
@@ -92,7 +178,7 @@ class SNW_Admin {
 
         ?>
         <div class="wrap snw-wrap">
-            <h1><?php echo esc_html__( 'Steigerwald-News Widget', 'steigerwald-news-widget' ); ?></h1>
+            <h1><?php echo esc_html__( 'News Widget erstellen', 'steigerwald-news-widget' ); ?></h1>
             <p class="snw-intro">
                 <?php echo esc_html__( 'Erstelle extern einbettbare Nachrichten-Widgets aus deinen WordPress-Beiträgen. Das Widget nutzt ausschließlich die vorhandene WordPress-REST-API – es wird kein eigener Endpunkt registriert.', 'steigerwald-news-widget' ); ?>
             </p>
@@ -122,8 +208,8 @@ class SNW_Admin {
             <p class="description" style="margin-top: 24px;">
                 <?php
                 printf(
-                    esc_html__( 'Build with %s', 'steigerwald-news-widget' ),
-                    '<a href="' . esc_url( 'https://ottili.one/coder' ) . '" target="_blank" rel="noopener">Ottili Coder</a>'
+                    esc_html__( 'Bereitgestellt von %s', 'steigerwald-news-widget' ),
+                    '<a href="' . esc_url( 'https://ld3.ottili.one' ) . '" target="_blank" rel="noopener">Ottili LD3</a>'
                 );
                 ?>
             </p>
@@ -402,6 +488,45 @@ class SNW_Admin {
                 <div id="snw-requests-list"></div>
                 <div id="snw-request-detail"></div>
             </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the accepted-partners page (separate from Partneranfragen).
+     *
+     * @return void
+     */
+    public static function render_partners() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'Keine Berechtigung.', 'steigerwald-news-widget' ) );
+        }
+        ?>
+        <div class="wrap snw-wrap">
+            <h1><?php echo esc_html__( 'Partner', 'steigerwald-news-widget' ); ?></h1>
+            <p class="snw-intro">
+                <?php echo esc_html__( 'Hier siehst du alle Partner, denen ein Widget-Code freigegeben wurde (1 Code je E-Mail/Partner). Partneranfragen, die noch nicht angenommen wurden, findest du unter „Partneranfragen“.', 'steigerwald-news-widget' ); ?>
+            </p>
+
+            <p class="snw-partners-filters">
+                <label>
+                    <?php echo esc_html__( 'Suche', 'steigerwald-news-widget' ); ?>
+                    <input type="text" id="snw-partner-search" class="regular-text" placeholder="<?php echo esc_attr__( 'Name, E-Mail, Code oder Domain', 'steigerwald-news-widget' ); ?>">
+                </label>
+                <label>
+                    <?php echo esc_html__( 'Status', 'steigerwald-news-widget' ); ?>
+                    <select id="snw-partner-status">
+                        <option value=""><?php echo esc_html__( 'Alle', 'steigerwald-news-widget' ); ?></option>
+                        <option value="active"><?php echo esc_html__( 'Aktiv', 'steigerwald-news-widget' ); ?></option>
+                        <option value="idle"><?php echo esc_html__( 'Im Ruhe', 'steigerwald-news-widget' ); ?></option>
+                        <option value="removed"><?php echo esc_html__( 'Entfernt', 'steigerwald-news-widget' ); ?></option>
+                        <option value="unknown"><?php echo esc_html__( 'Unbekannt', 'steigerwald-news-widget' ); ?></option>
+                    </select>
+                </label>
+                <button type="button" id="snw-load-partners" class="button"><?php echo esc_html__( 'Partner laden', 'steigerwald-news-widget' ); ?></button>
+            </p>
+
+            <div id="snw-partners-list"></div>
         </div>
         <?php
     }

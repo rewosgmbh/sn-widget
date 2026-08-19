@@ -7,8 +7,8 @@
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Tested up to:      6.7
- * Author:      Steigerwald-News
- * Author URI:  https://steigerwald-news.example/
+ * Author:      Ottili
+ * Author URI:  https://ld3.ottili.one/
  * License:     GPL-2
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: steigerwald-news-widget

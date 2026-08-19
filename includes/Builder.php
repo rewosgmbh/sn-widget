@@ -343,7 +343,7 @@ class SNW_Builder {
             </p>
 
             <label for="snw-title"><?php echo esc_html__( 'Überschrift (optional)', $t ); ?></label>
-            <input type="text" id="snw-title" class="regular-text" placeholder="<?php echo esc_attr__( 'z. B. Aktuelles aus dem Steigerwald', $t ); ?>">
+            <input type="text" id="snw-title" class="regular-text" placeholder="<?php echo esc_attr__( 'z. B. Aktuelles aus Ihrer Region', $t ); ?>">
 
             <label for="snw-on-error"><?php echo esc_html__( 'Fehlerverhalten', $t ); ?></label>
             <select id="snw-on-error">

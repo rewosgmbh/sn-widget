@@ -936,8 +936,8 @@
         root.setAttribute('aria-label', config.title || config.source_name || 'Nachrichten');
         applyDesign(root, el, config);
 
-        if (config.title) {
-            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title));
+        if (config.title || config.source_name) {
+            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title || config.source_name));
         }
 
         if (!posts.length) {
@@ -976,8 +976,8 @@
                 icon.className = 'snw-branding__icon';
                 icon.setAttribute('src', favicon);
                 icon.setAttribute('alt', '');
-                icon.setAttribute('width', '22');
-                icon.setAttribute('height', '22');
+                icon.setAttribute('width', '26');
+                icon.setAttribute('height', '26');
                 icon.setAttribute('loading', 'lazy');
                 icon.addEventListener('error', function () { icon.style.display = 'none'; });
                 branding.appendChild(icon);
@@ -1004,8 +1004,8 @@
         var root = document.createElement('section');
         root.className = 'snw-root';
         applyDesign(root, el, config);
-        if (config.title) {
-            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title));
+        if (config.title || config.source_name) {
+            root.appendChild(makeHeading(config.design && config.design.heading_level, 'snw-heading', config.title || config.source_name));
         }
         var err = document.createElement('p');
         err.className = 'snw-state snw-error';

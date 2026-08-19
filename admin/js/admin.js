@@ -1147,6 +1147,73 @@
     function init() {
         if ($('#snw-builder-form')) { initBuilder(); }
         if ($('#snw-preset-table') || $('#snw-requests-panel')) { initManage(); }
+        if ($('#snw-partners-list')) { initPartners(); }
+    }
+
+    // ------------------------------------------------------------------
+    // Partner page (accepted partners => 1 code per e-mail).
+    // ------------------------------------------------------------------
+    function initPartners() {
+        var listEl = $('#snw-partners-list');
+        if (!listEl) { return; }
+        var cache = [];
+
+        function render() {
+            var q = ($('#snw-partner-search') ? $('#snw-partner-search').value : '').trim().toLowerCase();
+            var st = $('#snw-partner-status') ? $('#snw-partner-status').value : '';
+            var rows = cache.filter(function (p) {
+                if (st && p.status !== st) { return false; }
+                if (!q) { return true; }
+                var hay = (p.id + ' ' + p.name + ' ' + p.email + ' ' + p.domain).toLowerCase();
+                return hay.indexOf(q) !== -1;
+            });
+            if (!rows.length) {
+                listEl.innerHTML = '<p>' + (I.partnerEmpty || 'Noch keine Partner freigegeben.') + '</p>';
+                return;
+            }
+            var statusText = { active: (I.active || 'Aktiv'), idle: (I.idle || 'Im Ruhe'), removed: (I.removed || 'Entfernt'), unknown: (I.unknown || 'Unbekannt') };
+            var table = '<table class="wp-list-table widefat fixed striped snw-preset-table"><thead><tr>' +
+                '<th>' + (I.code || 'Code') + '</th>' +
+                '<th>' + (I.name || 'Name') + '</th>' +
+                '<th>' + (I.email || 'E-Mail') + '</th>' +
+                '<th>' + (I.domain || 'Domain') + '</th>' +
+                '<th>' + (I.created || 'Erstellt') + '</th>' +
+                '<th>' + (I.lastSeen || 'Letzte Aktivität') + '</th>' +
+                '<th>' + (I.status || 'Status') + '</th>' +
+                '</tr></thead><tbody>';
+            rows.forEach(function (p) {
+                table += '<tr><td><strong>' + escapeHtml(p.id) + '</strong></td>' +
+                    '<td>' + escapeHtml(p.name) + '</td>' +
+                    '<td>' + escapeHtml(p.email) + '</td>' +
+                    '<td>' + escapeHtml(p.domain) + '</td>' +
+                    '<td>' + escapeHtml(p.created) + '</td>' +
+                    '<td>' + escapeHtml(p.last_seen || '—') + '</td>' +
+                    '<td>' + escapeHtml(statusText[p.status] || p.status) + '</td></tr>';
+            });
+            table += '</tbody></table>';
+            listEl.innerHTML = table;
+        }
+
+        function load() {
+            ajax('snw_list_partners').then(function (res) {
+                if (res.success && Array.isArray(res.data)) {
+                    cache = res.data;
+                    render();
+                } else {
+                    listEl.innerHTML = '<p>' + (I.partnerEmpty || 'Noch keine Partner freigegeben.') + '</p>';
+                }
+            }).catch(function () {
+                listEl.innerHTML = '<p>Fehler beim Laden.</p>';
+            });
+        }
+
+        var loadBtn = $('#snw-load-partners');
+        if (loadBtn) { loadBtn.addEventListener('click', load); }
+        var searchEl = $('#snw-partner-search');
+        if (searchEl) { searchEl.addEventListener('input', render); }
+        var statusEl = $('#snw-partner-status');
+        if (statusEl) { statusEl.addEventListener('change', render); }
+        load();
     }
 
     if (document.readyState === 'loading') {

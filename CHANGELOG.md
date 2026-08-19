@@ -17,6 +17,16 @@
 
 **Bugfix (vor Release entdeckt):** Die Admin-REST-Routen (`stats`, `widgets`, `pages`, `articles`, `partners`, `realtime`, `aggregate`) wurden über einen generischen Dispatcher registriert, der den Callback-Namen aus einem Request-Arg las. Da dieses Arg als Bare-Skalar statt als `{ default: ... }` übergeben wurde, lieferte `WP_REST_Request::get_param()` `null` → Dispatcher antwortete mit **404 für jeden Admin-Endpunkt** → Dashboard zeigte überall „Daten konnten nicht geladen werden." Behoben durch direkte Callback-Registrierung pro Route.
 
+**Release-Paket (vor Release ergänzt):**
+
+* **Partner-Modell (1 Code je E-Mail):** Ein Partner (identifiziert per E-Mail) erhält genau einen Widget-Code. Beim Annehmen einer Anfrage wird ein bestehender Code derselben E-Mail wiederverwendet, statt einen neuen Code zu erzeugen (`SNW_Presets::find_by_email`, `SNW_Settings::ajax_accept_request`).
+* **Statistik – Code↔Partner:** Widget-Ranking und Partner-Analytics verknüpfen jetzt jeden Code mit dem zugehörigen Partner (E-Mail/Name aus dem Preset), statt des leeren Telemetry-`partner`-Felds.
+* **Statistik – Builder-Nutzung:** Neues Telemetry-Event `builder_submit` und neue KPI „Builder-Nutzungen" (wie oft der öffentliche Widget-Builder abgesendet wurde). Schema-Version auf 2 angehoben, neue Spalte `daily.builders`.
+* **Neue Admin-Seite „Partner":** Separate Seite für freigegebene Partner (getrennt von „Partneranfragen"), mit Suche-, Status-Filter und Letzte-Aktivität (Telemetry `widget_pages`).
+* **WordPress-Dashboard-Widget:** Kompakte Statistik-Übersicht (Widgets, Partner, Offen, Builder-Nutzungen, Aufrufe, Klicks) inkl. Ottili-LD3-Branding-Link.
+* **Branding & Texte:** E-Mail-Versand enthält keinen WP-Shortcode mehr (nur universelles HTML-Snippet); „Steigerwald-News" im Widget wird durch den Websitenamen ersetzt; Plugin-Autor „Ottili" mit Link `ld3.ottili.one`; „Erstellen"-Seite heißt „News Widget erstellen"; Favicon im Widget leicht vergrößert (22→26 px).
+* **Schema-Fix:** Die `daily`- und `widget_pages`-Telemetrie-Tabellen wurden wegen eines zu langen zusammengesetzten Primary-Keys (page_path 512 + host 255) unter utf8mb4 nie erstellt – `page_path` auf 255 reduziert, damit Statistik auf echten Installationen funktioniert.
+
 ## 1.5.1
 
 **Public Builder – Layout & Live-Vorschau verfeinert:**
