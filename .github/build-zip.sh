@@ -15,7 +15,8 @@ mkdir -p "$DEST"
 cp -r admin includes languages public uninstall.php \
       steigerwald-news-widget.php readme.txt README.md CHANGELOG.md "$DEST/"
 
-ZIP="$REPO/steigerwald-news-widget.zip"
+mkdir -p "$REPO/build"
+ZIP="$REPO/build/steigerwald-news-widget.zip"
 rm -f "$ZIP"
 ( cd "$BUILD_ROOT" && zip -r "$ZIP" "$PLUGIN_DIR" -x '*.git*' >/dev/null )
 rm -rf "$BUILD_ROOT"

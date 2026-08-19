@@ -1,0 +1,59 @@
+name: Test & Build
+
+on:
+  push:
+    branches: stayermann
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint + Unit + Build ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:2
+
+      - name: PHP lint
+        run: |
+          fail=0
+          for f in $(find . -path ./vendor -prune -o -name '*.php' -print); do
+            php -l "$f" >/dev/null 2>&1 || { echo "LINT FAIL: $f"; fail=1; }
+          done
+          exit $fail
+
+      - name: PHP telemetry logic tests
+        run: php tests/php/test-telemetry.php
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JS syntax check
+        run: |
+          for f in public/js/*.js admin/js/*.js; do
+            node --check "$f" || { echo "SYNTAX FAIL: $f"; exit 1; }
+          done
+
+      - name: JS unit tests
+        run: |
+          node tests/js/telemetry.test.js
+          node tests/js/stats.test.js
+
+      - name: Build production ZIP (runtime only)
+        run: |
+          bash .github/build-zip.sh
+          ls -la build/*.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: steigerwald-news-widget
+          path: build/*.zip
+          if-no-files-found: error
