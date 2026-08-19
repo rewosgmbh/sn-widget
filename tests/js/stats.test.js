@@ -13,7 +13,7 @@ function ok(name, cond) {
     else { console.error('  FAIL ' + name); process.exitCode = 1; }
 }
 
-console.log('Steigerwald-News Widget — stats helpers tests');
+console.log('SN News Widget — stats helpers tests');
 
 ok('fmtNum groups thousands', typeof S.fmtNum(42817) === 'string' && S.fmtNum(42817).indexOf('42') !== -1);
 ok('fmtNum zero', S.fmtNum(0) === '0');

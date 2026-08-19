@@ -1,5 +1,5 @@
 /*
- * Steigerwald-News Widget — public base styles.
+ * SN News Widget — public base styles.
  * This is the canonical stylesheet; the public widget.js injects an identical
  * copy when this file is not already present, so external partners only need
  * to include the single <script> tag.

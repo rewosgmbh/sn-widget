@@ -43,7 +43,7 @@ require_once __DIR__ . '/../../includes/Helpers.php';
 require_once __DIR__ . '/../../includes/EmbedGenerator.php';
 require_once __DIR__ . '/../../includes/Presets.php';
 
-echo "Steigerwald-News Widget — PHP logic tests\n";
+echo "SN News Widget — PHP logic tests\n";
 
 // --- default_config ---
 $def = SNW_Helpers::default_config();

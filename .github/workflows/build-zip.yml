@@ -16,6 +16,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: PHP lint
+        run: |
+          fail=0
+          for f in $(find . -path ./.ottili-coder -prune -o -path ./node_modules -prune -o -name '*.php' -print); do
+            php -l "$f" >/dev/null 2>&1 || { echo "LINT FAIL: $f"; fail=1; }
+          done
+          exit $fail
+
+      - name: PHP unit tests
+        run: |
+          php tests/php/test-helpers.php
+          php tests/php/test-requests.php
+          php tests/php/test-telemetry.php
+          php tests/php/test-branding.php
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JS syntax check
+        run: |
+          for f in public/js/*.js admin/js/*.js; do
+            node --check "$f" || { echo "SYNTAX FAIL: $f"; exit 1; }
+          done
+
+      - name: JS unit tests
+        run: |
+          node tests/js/widget.test.js
+          node tests/js/render.test.js
+          node tests/js/frontend.test.js
+          node tests/js/telemetry.test.js
+          node tests/js/stats.test.js
+
       - name: Build plugin ZIP
         run: bash .github/build-zip.sh
 
@@ -25,11 +64,11 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME}"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber steigerwald-news-widget.zip
+            gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber build/sn-news-widget.zip
           else
             gh release create "$tag" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Steigerwald-News Widget ${tag}" \
+              --title "SN News Widget ${tag}" \
               --generate-notes \
-              steigerwald-news-widget.zip
+              build/sn-news-widget.zip
           fi

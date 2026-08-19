@@ -231,7 +231,7 @@ class SNW_Requests {
         }
 
         $page_id = wp_insert_post( array(
-            'post_title'   => __( 'News-Widget erstellen', 'steigerwald-news-widget' ),
+            'post_title'   => __( 'SN News Widget erstellen', 'steigerwald-news-widget' ),
             'post_name'    => $stored_slug,
             'post_content' => '[steigerwald_news_widget_builder]',
             'post_status'  => 'publish',

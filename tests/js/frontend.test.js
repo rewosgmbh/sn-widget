@@ -14,7 +14,7 @@ function ok(name, cond) {
     else { console.error('  FAIL ' + name); process.exitCode = 1; }
 }
 
-console.log('Steigerwald-News Widget — frontend + domain tests');
+console.log('SN News Widget — frontend + domain tests');
 
 // Fake form implementing just enough of the DOM for buildConfigFromForm.
 function fakeForm(values, checks) {

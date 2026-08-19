@@ -1,5 +1,5 @@
 /**
- * Steigerwald-News Widget — public config builder (Node-testable).
+ * SN News Widget — public config builder (Node-testable).
  *
  * The public [steigerwald_news_widget_builder] form shares the exact same
  * markup/field IDs as the admin builder, so this pure helper mirrors the

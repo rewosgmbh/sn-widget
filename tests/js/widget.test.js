@@ -13,7 +13,7 @@ function ok(name, cond) {
     else { console.error('  FAIL ' + name); process.exitCode = 1; }
 }
 
-console.log('Steigerwald-News Widget — pure function tests');
+console.log('SN News Widget — pure function tests');
 
 // --- encode / decode roundtrip (incl. unicode + emoji) ---
 var cfg = {

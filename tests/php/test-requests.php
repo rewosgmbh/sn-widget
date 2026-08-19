@@ -8,7 +8,7 @@
 
 define('ABSPATH', '/tmp/');
 define('SNW_URL', 'https://example.com/wp-content/plugins/steigerwald-news-widget/');
-define('SNW_VERSION', '1.3.0');
+define('SNW_VERSION', '1.2.0');
 define('HOUR_IN_SECONDS', 3600);
 
 // --- Stubs for WordPress core functions -------------------------------
@@ -62,7 +62,7 @@ require_once __DIR__ . '/../../includes/Presets.php';
 require_once __DIR__ . '/../../includes/Requests.php';
 require_once __DIR__ . '/../../includes/Rest.php';
 
-echo "Steigerwald-News Widget — requests / domain / rate-limit tests\n";
+echo "SN News Widget — requests / domain / rate-limit tests\n";
 
 // --- sanitize_domain ---
 snw_assert('sanitize_domain bare host', SNW_Helpers::sanitize_domain('Example.com') === 'example.com');
@@ -117,7 +117,12 @@ snw_assert('Rest host_from_url', SNW_REST::host_from_url('https://News.Example.c
 snw_assert('Rest host_from_url empty', SNW_REST::host_from_url('') === '');
 $_SERVER['REMOTE_ADDR'] = '5.6.7.8';
 $_SERVER['HTTP_X_FORWARDED_FOR'] = '1.1.1.1, 2.2.2.2';
-snw_assert('Rest client_ip honors proxy', SNW_REST::client_ip() === '1.1.1.1');
+snw_assert('Rest client_ip ignores spoofed XFF from public client', SNW_REST::client_ip() === '5.6.7.8');
+
+// Behind a trusted private/loopback proxy, the first XFF entry is used.
+$_SERVER['REMOTE_ADDR'] = '10.0.0.1';
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '1.1.1.1, 2.2.2.2';
+snw_assert('Rest client_ip honors XFF behind private proxy', SNW_REST::client_ip() === '1.1.1.1');
 
 // --- 1 code per e-mail (partner dedupe) ---
 function snw_simulate_accept($email, $domain) {

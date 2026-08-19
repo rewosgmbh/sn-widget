@@ -1,5 +1,5 @@
 /**
- * Steigerwald-News Widget - Admin Builder.
+ * SN News Widget - Admin Builder.
  *
  * Drives the Widget Builder UI: content configuration, design builder,
  * tag/post search, live preview (via the public renderer), and preset

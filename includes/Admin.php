@@ -23,8 +23,8 @@ class SNW_Admin {
      */
     public static function admin_menu() {
         add_menu_page(
-            __( 'News Widget', 'steigerwald-news-widget' ),
-            __( 'News Widget', 'steigerwald-news-widget' ),
+            __( 'SN News Widget', 'steigerwald-news-widget' ),
+            __( 'SN News Widget', 'steigerwald-news-widget' ),
             'manage_options',
             'steigerwald-news-widget',
             array( __CLASS__, 'render_dashboard' ),
@@ -43,7 +43,7 @@ class SNW_Admin {
 
         add_submenu_page(
             'steigerwald-news-widget',
-            __( 'News Widget erstellen', 'steigerwald-news-widget' ),
+            __( 'SN News Widget erstellen', 'steigerwald-news-widget' ),
             __( 'Erstellen', 'steigerwald-news-widget' ),
             'manage_options',
             'steigerwald-news-widget-create',
@@ -109,7 +109,7 @@ class SNW_Admin {
     public static function register_dashboard_widget() {
         wp_add_dashboard_widget(
             'snw_dashboard_widget',
-            __( 'News Widget', 'steigerwald-news-widget' ),
+            __( 'SN News Widget', 'steigerwald-news-widget' ),
             array( __CLASS__, 'render_dashboard_widget' )
         );
     }
@@ -204,9 +204,9 @@ class SNW_Admin {
 
         ?>
         <div class="wrap snw-wrap">
-            <h1><?php echo esc_html__( 'News Widget erstellen', 'steigerwald-news-widget' ); ?></h1>
+            <h1><?php echo esc_html__( 'SN News Widget erstellen', 'steigerwald-news-widget' ); ?></h1>
             <p class="snw-intro">
-                <?php echo esc_html__( 'Erstelle extern einbettbare Nachrichten-Widgets aus deinen WordPress-Beiträgen. Das Widget nutzt ausschließlich die vorhandene WordPress-REST-API – es wird kein eigener Endpunkt registriert.', 'steigerwald-news-widget' ); ?>
+                <?php echo esc_html__( 'Erstelle extern einbettbare Nachrichten-Widgets aus deinen WordPress-Beiträgen. Das Widget nutzt die vorhandene WordPress-REST-API für Beiträge. Optional kann eine DSGVO-konforme Statistik/Telemetrie aktiviert werden.', 'steigerwald-news-widget' ); ?>
             </p>
             <p class="snw-steps">
                 <strong><?php echo esc_html__( 'So geht’s:', 'steigerwald-news-widget' ); ?></strong>

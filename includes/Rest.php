@@ -213,13 +213,21 @@ class SNW_REST {
      * @return string
      */
     public static function client_ip() {
-        if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+        $remote = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        // Only trust X-Forwarded-For when the direct peer is a private/loopback
+        // proxy. A public client spoofing XFF must not bypass the rate limit.
+        $is_public = filter_var(
+            $remote,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        );
+        if ( false === $is_public && ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
             $parts = explode( ',', (string) $_SERVER['HTTP_X_FORWARDED_FOR'] );
             $ip    = trim( $parts[0] );
-            if ( '' !== $ip ) {
+            if ( '' !== $ip && filter_var( $ip, FILTER_VALIDATE_IP ) ) {
                 return $ip;
             }
         }
-        return isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        return $remote;
     }
 }

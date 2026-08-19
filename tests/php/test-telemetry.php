@@ -11,7 +11,7 @@
 
 define('ABSPATH', '/tmp/');
 define('SNW_URL', 'https://example.com/wp-content/plugins/steigerwald-news-widget/');
-define('SNW_VERSION', '1.6.0');
+define('SNW_VERSION', '1.2.0');
 define('DAY_IN_SECONDS', 86400);
 define('HOUR_IN_SECONDS', 3600);
 define('MINUTE_IN_SECONDS', 60);
@@ -64,7 +64,7 @@ function snw_tassert($name, $cond) {
     else { $fail++; echo "  FAIL $name\n"; }
 }
 
-echo "Steigerwald-News Widget — Telemetry logic tests\n";
+echo "SN News Widget — Telemetry logic tests\n";
 
 // --- normalize_host ---
 snw_tassert('host lowercase+strip port', SNW_Telemetry::normalize_host('Example.COM:8080') === 'example.com');
@@ -130,7 +130,7 @@ $rec = SNW_Telemetry::build_record(array(
     'partner' => 'asv-sassanfahrt',
     'host' => 'www.asv-sassanfahrt.de',
     'page_path' => '/fussball-news/?fbclid=1',
-    'widget_version' => '1.6.0',
+    'widget_version' => '1.2.0',
     'layout' => 'list',
     'mode' => 'category',
     'performance' => array('rest_ms' => 183, 'render_ms' => 12),

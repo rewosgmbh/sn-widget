@@ -1,5 +1,5 @@
 /**
- * Steigerwald-News Widget — Statistik dashboard (vanilla JS, no dependencies).
+ * SN News Widget — Statistik dashboard (vanilla JS, no dependencies).
  *
  * Talks to the Telemetry REST API (admin-authenticated). All failures are
  * contained: a broken API never breaks the WordPress admin, and telemetry
@@ -615,7 +615,7 @@
             testBtn.addEventListener('click', function () {
                 try {
                     var ep = String(C.publicAlias || '').replace(/\/event$/, '');
-                    var body = JSON.stringify({ event: 'widget_load', widget_id: 'SNW-TEST', partner: 'debug', host: 'debug.local', page_path: '/', widget_version: C.version || '1.6.0', layout: 'list', mode: 'latest', article_ids: [], performance: { rest_ms: 1, render_ms: 1 } });
+                    var body = JSON.stringify({ event: 'widget_load', widget_id: 'SNW-TEST', partner: 'debug', host: 'debug.local', page_path: '/', widget_version: C.version || '1.2.0', layout: 'list', mode: 'latest', article_ids: [], performance: { rest_ms: 1, render_ms: 1 } });
                     if (navigator.sendBeacon) { navigator.sendBeacon(ep + '/event', new Blob([body], { type: 'application/json' })); }
                     testBtn.textContent = 'Gesendet (SNW-TEST)';
                 } catch (e) { testBtn.textContent = 'Fehler'; }

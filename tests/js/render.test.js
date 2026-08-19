@@ -131,7 +131,7 @@ function renderSync(el, cfg) {
     return new Promise(function (res) { setTimeout(res, 30); });
 }
 
-console.log('Steigerwald-News Widget — render tests');
+console.log('SN News Widget — render tests');
 
 (function () {
     setMock([]);
@@ -274,7 +274,7 @@ console.log('Steigerwald-News Widget — render tests');
     return renderSync(el, baseConfig({})).then(function () {
         var anchors = [];
         walk(el, function (n) { return n.tagName === 'a'; }, anchors);
-        ok('links open in new tab (target=_blank)', anchors.length > 0 && anchors.every(function (a) { return a.target === '_blank'; }));
+        ok('links open in new tab (target=_blank)', anchors.length > 0 && anchors.every(function (a) { return a.target === '_blank' || a.getAttribute('target') === '_blank'; }));
     });
 })();
 

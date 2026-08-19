@@ -1,5 +1,5 @@
 /**
- * Steigerwald-News Widget — Public renderer (vanilla JS, no dependencies).
+ * SN News Widget — Public renderer (vanilla JS, no dependencies).
  *
  * Design goals:
  *  - Works on ANY host site (WordPress, Joomla, TYPO3, static, builders).
@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var VERSION = '1.6.0';
+    var VERSION = '1.2.0';
 
     // --- Unicode-safe base64url helpers -------------------------------
     var _atob = (typeof atob !== 'undefined')
@@ -824,7 +824,7 @@
     function build(config, el) {
         if (!config || !config.api) {
             if (typeof console !== 'undefined') {
-                console.debug('[Steigerwald-News Widget] Ungültige oder unvollständige Konfiguration.', config);
+                console.debug('[SN News Widget] Ungültige oder unvollständige Konfiguration.', config);
             }
             el.replaceChildren();
             return;
@@ -907,7 +907,7 @@
         }).catch(function (err) {
             if (el.__snwController !== controller) { return; } // superseded
             if (typeof console !== 'undefined') {
-                console.debug('[Steigerwald-News Widget] Ladefehler:', err && err.message);
+                console.debug('[SN News Widget] Ladefehler:', err && err.message);
             }
             // A timeout (AbortError on the still-current controller) and any
             // other failure both fall through to the configured error state
@@ -1063,7 +1063,7 @@
         var cfg = decodeConfig(el.getAttribute('data-config'));
         if (!cfg) {
             if (typeof console !== 'undefined') {
-                console.debug('[Steigerwald-News Widget] data-config konnte nicht decodiert werden.');
+                console.debug('[SN News Widget] data-config konnte nicht decodiert werden.');
             }
             el.replaceChildren();
             return;
@@ -1086,7 +1086,7 @@
             var cfg = decodeConfig(el.getAttribute('data-config'));
             if (!cfg) {
                 if (typeof console !== 'undefined') {
-                    console.debug('[Steigerwald-News Widget] Ungültiges data-config an Element', el);
+                    console.debug('[SN News Widget] Ungültiges data-config an Element', el);
                 }
                 continue;
             }

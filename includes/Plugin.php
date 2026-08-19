@@ -32,6 +32,32 @@ class SNW_Plugin {
         }
 
         add_filter( 'plugin_action_links_' . plugin_basename( SNW_FILE ), array( __CLASS__, 'action_links' ) );
+
+        add_action( 'init', array( __CLASS__, 'maybe_upgrade' ) );
+    }
+
+    /**
+     * Bring an existing installation up to date when the plugin is updated in
+     * place. WordPress only runs the activation hook on a fresh activation, so
+     * structures introduced by a newer version (the public builder page and the
+     * telemetry tables) must be created here instead.
+     *
+     * @return void
+     */
+    public static function maybe_upgrade() {
+        $installed = get_option( 'snw_version', '' );
+        if ( $installed === SNW_VERSION ) {
+            return;
+        }
+
+        if ( class_exists( 'SNW_Requests' ) ) {
+            SNW_Requests::ensure_builder_page();
+        }
+        if ( class_exists( 'SNW_Telemetry' ) ) {
+            SNW_Telemetry::activate();
+        }
+
+        update_option( 'snw_version', SNW_VERSION );
     }
 
     /**
@@ -47,6 +73,7 @@ class SNW_Plugin {
         if ( class_exists( 'SNW_Telemetry' ) ) {
             SNW_Telemetry::activate();
         }
+        update_option( 'snw_version', SNW_VERSION );
     }
 
     /**

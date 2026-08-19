@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: Steigerwald-News Widget
- * Plugin URI:  https://steigerwald-news.example/
- * Description: Erstellt extern einbettbare Nachrichten-Widgets auf Basis der vorhandenen WordPress-REST-API. Kein eigener REST-Endpunkt, keine eigene Datenbanktabelle.
+ * Plugin Name: SN News Widget
+ * Plugin URI:  https://ld3.ottili.one
+ * Description: Erstellt extern einbettbare Nachrichten-Widgets aus WordPress-Beiträgen über die WordPress-REST-API. Optionale, DSGVO-konforme Statistik/Telemetrie.
  * Version:     1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Tested up to:      6.7
- * Author:      Ottili
+ * Tested up to:      7.0.4
+ * Author:      Ottili ONE
  * Author URI:  https://ld3.ottili.one/
  * License:     GPL-2
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SNW_VERSION', '1.6.0' );
+define( 'SNW_VERSION', '1.2.0' );
 define( 'SNW_FILE', __FILE__ );
 define( 'SNW_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNW_URL', plugin_dir_url( __FILE__ ) );

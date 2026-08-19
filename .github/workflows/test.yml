@@ -2,7 +2,7 @@ name: Test & Build
 
 on:
   push:
-    branches: stayermann
+    branches: master
   pull_request:
   workflow_dispatch:
 
@@ -22,13 +22,17 @@ jobs:
       - name: PHP lint
         run: |
           fail=0
-          for f in $(find . -path ./vendor -prune -o -name '*.php' -print); do
+          for f in $(find . -path ./.ottili-coder -prune -o -path ./node_modules -prune -o -name '*.php' -print); do
             php -l "$f" >/dev/null 2>&1 || { echo "LINT FAIL: $f"; fail=1; }
           done
           exit $fail
 
-      - name: PHP telemetry logic tests
-        run: php tests/php/test-telemetry.php
+      - name: PHP unit tests
+        run: |
+          php tests/php/test-helpers.php
+          php tests/php/test-requests.php
+          php tests/php/test-telemetry.php
+          php tests/php/test-branding.php
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -43,6 +47,9 @@ jobs:
 
       - name: JS unit tests
         run: |
+          node tests/js/widget.test.js
+          node tests/js/render.test.js
+          node tests/js/frontend.test.js
           node tests/js/telemetry.test.js
           node tests/js/stats.test.js
 
@@ -54,6 +61,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: steigerwald-news-widget
+          name: sn-news-widget
           path: build/*.zip
           if-no-files-found: error

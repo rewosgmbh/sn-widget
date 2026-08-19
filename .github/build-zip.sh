@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the installable plugin ZIP (top folder: steigerwald-news-widget/).
-# Excludes .git and any pre-built zip. Run from repo root or via CI.
+# Excludes .git, agent dirs, dev artifacts and any pre-built zip.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -16,7 +16,7 @@ cp -r admin includes languages public uninstall.php \
       steigerwald-news-widget.php readme.txt README.md CHANGELOG.md "$DEST/"
 
 mkdir -p "$REPO/build"
-ZIP="$REPO/build/steigerwald-news-widget.zip"
+ZIP="$REPO/build/sn-news-widget.zip"
 rm -f "$ZIP"
 ( cd "$BUILD_ROOT" && zip -r "$ZIP" "$PLUGIN_DIR" -x '*.git*' >/dev/null )
 rm -rf "$BUILD_ROOT"

@@ -1,6 +1,6 @@
 <?php
 /**
- * Helper / utility functions for the Steigerwald-News Widget.
+ * Helper / utility functions for the SN News Widget.
  *
  * No WordPress-Core REST endpoints are registered here. This file only
  * contains pure configuration helpers, sanitizers and validators that are
@@ -302,7 +302,7 @@ class SNW_Helpers {
         }
         $global = SNW_Settings::get_branding();
         $b      = ( isset( $config['branding'] ) && is_array( $config['branding'] ) ) ? $config['branding'] : array();
-        foreach ( array( 'image', 'image_size', 'text', 'name', 'link' ) as $key ) {
+        foreach ( array( 'image', 'image_size', 'text', 'name', 'link', 'text_size' ) as $key ) {
             if ( ! isset( $b[ $key ] ) || $b[ $key ] === '' || $b[ $key ] === null ) {
                 $b[ $key ] = isset( $global[ $key ] ) ? $global[ $key ] : '';
             }

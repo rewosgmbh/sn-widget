@@ -14,7 +14,7 @@ function ok(name, cond) {
     else { console.error('  FAIL ' + name); process.exitCode = 1; }
 }
 
-console.log('Steigerwald-News Widget — telemetry client tests');
+console.log('SN News Widget — telemetry client tests');
 
 // --- endpoint derivation ---
 ok('endpoint from api base', T.endpointFor({ api: 'https://src.example/wp-json/wp/v2' }) === 'https://src.example/sn-widget/telemetry/v1');

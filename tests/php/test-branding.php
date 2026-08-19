@@ -9,7 +9,7 @@
 
 define('ABSPATH', '/tmp/');
 define('SNW_URL', 'https://example.com/wp-content/plugins/steigerwald-news-widget/');
-define('SNW_VERSION', '1.6.0');
+define('SNW_VERSION', '1.2.0');
 
 // --- Stubs for WordPress core functions -------------------------------
 $GLOBALS['__options'] = array();
@@ -48,7 +48,7 @@ require_once __DIR__ . '/../../includes/Presets.php';
 require_once __DIR__ . '/../../includes/Requests.php';
 require_once __DIR__ . '/../../includes/Settings.php';
 
-echo "Steigerwald-News Widget — branding tests\n";
+echo "SN News Widget — branding tests\n";
 
 // --- default_branding ---
 $def = SNW_Settings::default_branding();
