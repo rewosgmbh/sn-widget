@@ -118,16 +118,29 @@ class SNW_Shortcode {
 
             // Shared builder styles + the same builder script as the admin so
             // the public form has feature parity (controls + live preview).
+            // The colour fields use wp-color-picker, which is only registered
+            // in the admin by default (and may be deregistered on the
+            // front-end). Register the core handles explicitly when missing so
+            // the visual picker works here too.
+            self::ensure_color_picker();
+            $has_color_picker = wp_script_is( 'wp-color-picker', 'registered' );
+
             wp_enqueue_style(
                 'snw-admin-css',
                 SNW_URL . 'admin/css/admin.css',
-                array(),
+                $has_color_picker ? array( 'wp-color-picker' ) : array(),
                 SNW_VERSION
             );
+
+            $admin_deps = array( 'jquery', SNW_Assets::WIDGET_JS_HANDLE );
+            if ( $has_color_picker ) {
+                $admin_deps[] = 'wp-color-picker';
+            }
+
             wp_enqueue_script(
                 SNW_Assets::ADMIN_JS_HANDLE,
                 SNW_URL . 'admin/js/admin.js',
-                array( 'jquery', SNW_Assets::WIDGET_JS_HANDLE ),
+                $admin_deps,
                 SNW_VERSION,
                 true
             );
@@ -171,6 +184,62 @@ class SNW_Shortcode {
         ob_start();
         SNW_Builder::render_form( array( 'context' => 'public' ) );
         return ob_get_clean();
+    }
+
+    /**
+     * Ensure the core wp-color-picker (and its iris / wp-i18n dependencies)
+     * are registered on the front-end. They are only registered in the admin
+     * by default and may be deregistered there too, so register the core
+     * handles explicitly when missing. Safe to call more than once.
+     *
+     * @return void
+     */
+    private static function ensure_color_picker() {
+        if ( wp_script_is( 'wp-color-picker', 'registered' )
+            && wp_style_is( 'wp-color-picker', 'registered' ) ) {
+            return;
+        }
+
+        $suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+
+        if ( ! wp_script_is( 'iris', 'registered' ) ) {
+            wp_register_script(
+                'iris',
+                admin_url( "js/iris{$suffix}.js" ),
+                array( 'jquery-ui-draggable', 'jquery-ui-slider', 'jquery-touch-punch' ),
+                '1.1.1',
+                true
+            );
+        }
+
+        if ( ! wp_script_is( 'wp-color-picker', 'registered' ) ) {
+            wp_register_script(
+                'wp-color-picker',
+                admin_url( "js/color-picker{$suffix}.js" ),
+                array( 'iris', 'wp-i18n' ),
+                false,
+                true
+            );
+            wp_localize_script(
+                'wp-color-picker',
+                'wpColorPickerL10n',
+                array(
+                    'clear'         => __( 'Klar', 'steigerwald-news-widget' ),
+                    'defaultString' => __( 'Standard', 'steigerwald-news-widget' ),
+                    'pick'          => __( 'Wählen', 'steigerwald-news-widget' ),
+                    'current'       => __( 'Aktuell', 'steigerwald-news-widget' ),
+                )
+            );
+        }
+
+        if ( ! wp_style_is( 'wp-color-picker', 'registered' ) ) {
+            wp_register_style(
+                'wp-color-picker',
+                admin_url( "css/color-picker{$suffix}.css" ),
+                array(),
+                false
+            );
+        }
     }
 
     /**

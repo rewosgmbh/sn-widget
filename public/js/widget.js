@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var VERSION = '1.2.0';
+    var VERSION = '1.6.0';
 
     // --- Unicode-safe base64url helpers -------------------------------
     var _atob = (typeof atob !== 'undefined')
@@ -285,6 +285,192 @@
     }
 
     // ------------------------------------------------------------------
+    // Telemetry — internal analytics (non-blocking, privacy-safe)
+    // ------------------------------------------------------------------
+    // Events are sent via navigator.sendBeacon (fallback fetch+keepalive) so
+    // they never block rendering or navigation. Every call is wrapped in
+    // try/catch: telemetry failure must NEVER break the widget.
+    //
+    // Two distinct view metrics:
+    //   widget_load          -> fired once per instance when the widget has
+    //                           initialized and attempted to load content.
+    //   viewable_impression  -> fired once per instance when >=50% of the
+    //                           widget has been visible for >=1000ms.
+    //   article_click        -> fired on each article link click.
+    //   widget_error         -> fired when loading/rendering fails.
+    //
+    // The visitor key is generated server-side (HMAC of coarse request
+    // material); the client never sees or computes it.
+
+    function snwTelemetryEndpoint( config ) {
+        if ( ! config || ! config.api ) { return ''; }
+        try {
+            var u = new URL( config.api, ( typeof location !== 'undefined' ) ? location.href : 'https://localhost/' );
+            return u.origin + '/sn-widget/telemetry/v1';
+        } catch ( e ) {
+            return '';
+        }
+    }
+
+    function snwCtx( config, el ) {
+        return {
+            widget_id:      config.widget_id || '',
+            partner:        config.partner || '',
+            host:           ( typeof location !== 'undefined' ) ? ( location.hostname || '' ) : '',
+            page_path:      ( typeof location !== 'undefined' ) ? ( location.pathname || '/' ) : '/',
+            widget_version: VERSION,
+            layout:         config.layout || '',
+            mode:           config.mode || '',
+            instance_id:    ( el && el.__snwInstanceId ) ? el.__snwInstanceId : ''
+        };
+    }
+
+    function snwSendTelemetry( config, payload ) {
+        try {
+            var ep = snwTelemetryEndpoint( config );
+            if ( ! ep ) { return; }
+            var body = JSON.stringify( payload );
+            if ( typeof navigator !== 'undefined' && navigator.sendBeacon ) {
+                var ok = navigator.sendBeacon( ep + '/event', new Blob( [ body ], { type: 'application/json' } ) );
+                if ( ok ) { return; }
+            }
+            if ( typeof fetch !== 'undefined' ) {
+                fetch( ep + '/event', {
+                    method: 'POST',
+                    body: body,
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    credentials: 'omit',
+                    keepalive: true
+                } ).catch( function () {} );
+            }
+        } catch ( e ) {
+            // Never break the widget.
+        }
+    }
+
+    function snwFireWidgetLoad( config, ctx, performance, articleIds ) {
+        snwSendTelemetry( config, {
+            event: 'widget_load',
+            widget_id: ctx.widget_id,
+            partner: ctx.partner,
+            host: ctx.host,
+            page_path: ctx.page_path,
+            widget_version: ctx.widget_version,
+            layout: ctx.layout,
+            mode: ctx.mode,
+            instance_id: ctx.instance_id,
+            article_ids: articleIds || [],
+            performance: performance || {}
+        } );
+    }
+
+    function snwFireError( config, ctx, code ) {
+        snwSendTelemetry( config, {
+            event: 'widget_error',
+            widget_id: ctx.widget_id,
+            partner: ctx.partner,
+            host: ctx.host,
+            page_path: ctx.page_path,
+            widget_version: ctx.widget_version,
+            layout: ctx.layout,
+            mode: ctx.mode,
+            instance_id: ctx.instance_id,
+            error_code: code || 'UNKNOWN'
+        } );
+    }
+
+    function snwFireClick( config, ctx, articleId ) {
+        snwSendTelemetry( config, {
+            event: 'article_click',
+            widget_id: ctx.widget_id,
+            partner: ctx.partner,
+            host: ctx.host,
+            page_path: ctx.page_path,
+            widget_version: ctx.widget_version,
+            layout: ctx.layout,
+            mode: ctx.mode,
+            instance_id: ctx.instance_id,
+            article_id: articleId
+        } );
+    }
+
+    // Viewable impression: >=50% visible for >=1000ms, at most once per instance.
+    function snwObserveViewable( el, config, ctx ) {
+        if ( el.__snwViewableSent || el.__snwViewableObserver ) { return; }
+        if ( typeof IntersectionObserver === 'undefined' ) { return; }
+        var timer = null;
+        var observer = new IntersectionObserver( function ( entries ) {
+            try {
+                for ( var i = 0; i < entries.length; i++ ) {
+                    var entry = entries[ i ];
+                    var visible = entry.isIntersecting && entry.intersectionRatio >= 0.5;
+                    if ( visible ) {
+                        if ( ! timer && ! el.__snwViewableSent ) {
+                            timer = setTimeout( function () {
+                                if ( el.__snwViewableSent ) { return; }
+                                el.__snwViewableSent = true;
+                                snwSendTelemetry( config, {
+                                    event: 'viewable_impression',
+                                    widget_id: ctx.widget_id,
+                                    partner: ctx.partner,
+                                    host: ctx.host,
+                                    page_path: ctx.page_path,
+                                    widget_version: ctx.widget_version,
+                                    layout: ctx.layout,
+                                    mode: ctx.mode,
+                                    instance_id: ctx.instance_id
+                                } );
+                                if ( observer ) { observer.disconnect(); }
+                            }, 1000 );
+                        }
+                    } else {
+                        if ( timer ) { clearTimeout( timer ); timer = null; }
+                    }
+                }
+            } catch ( e ) { /* ignore */ }
+        }, { threshold: [ 0, 0.5, 1 ] } );
+        el.__snwViewableObserver = observer;
+        observer.observe( el );
+    }
+
+    // Article click capture. Does not preventDefault, so navigation proceeds.
+    function snwAttachClicks( el, config, ctx ) {
+        if ( el.__snwClicksAttached ) { return; }
+        el.__snwClicksAttached = true;
+        el.addEventListener( 'click', function ( e ) {
+            try {
+                var target = e.target;
+                var link = ( target && target.closest ) ? target.closest( 'a' ) : null;
+                if ( ! link ) { return; }
+                var article = ( link.closest ) ? link.closest( '[data-article-id]' ) : null;
+                if ( ! article ) { return; }
+                var aid = parseInt( article.getAttribute( 'data-article-id' ), 10 );
+                if ( ! aid ) { return; }
+                var now = Date.now();
+                if ( el.__snwLastClick && el.__snwLastClick.id === aid && ( now - el.__snwLastClick.t ) < 600 ) {
+                    return; // dedupe rapid double click
+                }
+                el.__snwLastClick = { id: aid, t: now };
+                snwFireClick( config, ctx, aid );
+            } catch ( err ) { /* never break navigation */ }
+        }, true );
+    }
+
+    // Map a load/error to a coarse error code for telemetry.
+    function snwErrorCode( err ) {
+        if ( ! err ) { return 'UNKNOWN'; }
+        var name = err.name || '';
+        var msg = err.message || '';
+        if ( name === 'AbortError' || /abort/i.test( msg ) ) { return 'REST_TIMEOUT'; }
+        var mm = msg.match( /HTTP\s*(\d{3})/ );
+        if ( mm ) { return 'REST_' + mm[ 1 ]; }
+        if ( /network/i.test( msg ) ) { return 'NETWORK_ERROR'; }
+        if ( /cors/i.test( msg ) ) { return 'CORS_ERROR'; }
+        return 'RENDER_ERROR';
+    }
+
+    // ------------------------------------------------------------------
     // Lightweight cache (memory + sessionStorage, TTL ~10 min)
     // ------------------------------------------------------------------
     var memoryCache = {};
@@ -426,7 +612,7 @@
         error: 'Die Nachrichten konnten gerade nicht geladen werden.',
         loading: 'Nachrichten werden geladen …',
         untitled: 'Beitrag',
-        branding: 'Nachrichten bereitgestellt von',
+        branding: 'Nachrichten von',
         byAuthor: 'von'
     };
 
@@ -517,6 +703,9 @@
 
         var article = document.createElement('article');
         article.className = 'snw-item';
+        if ( post && post.id ) {
+            article.setAttribute( 'data-article-id', String( post.id ) );
+        }
 
         var imageUrl = '';
         if (show.image) { imageUrl = featuredImageUrl(post); }
@@ -655,6 +844,13 @@
         // this call uses the correct labels even with several widgets present.
         var texts = resolveTexts(config);
 
+        // Short-lived, client-side instance id (multiple copies of the same
+        // widget id on one page are told apart without any persistent id).
+        if (!el.__snwInstanceId) {
+            el.__snwInstanceId = 'i' + (++uidCounter) + '-' + Math.random().toString(36).slice(2, 8);
+        }
+        var ctx = snwCtx(config, el);
+
         // Abort any in-flight request for this element (rapid config changes).
         if (el.__snwController) {
             try { el.__snwController.abort(); } catch (e) { /* ignore */ }
@@ -672,6 +868,7 @@
 
         var key = buildCacheKey(config);
         var cached = cacheGet(key);
+        var fetchStart = (typeof performance !== 'undefined') ? performance.now() : Date.now();
 
         var proceed = cached
             ? Promise.resolve(cached)
@@ -682,7 +879,31 @@
 
         proceed.then(function (posts) {
             if (el.__snwController !== controller) { return; } // superseded
+            var renderStart = (typeof performance !== 'undefined') ? performance.now() : Date.now();
             renderWidget(config, el, Array.isArray(posts) ? posts : [], texts);
+            var renderEnd = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+
+            var articleIds = [];
+            if (Array.isArray(posts)) {
+                for (var i = 0; i < posts.length; i++) {
+                    if (posts[i] && posts[i].id) { articleIds.push(posts[i].id); }
+                }
+            }
+            // Raw load = widget initialized and attempted to load (success here).
+            if (!el.__snwLoadSent) {
+                el.__snwLoadSent = true;
+                snwFireWidgetLoad(
+                    config,
+                    ctx,
+                    { rest_ms: Math.round(renderStart - fetchStart), render_ms: Math.round(renderEnd - renderStart) },
+                    articleIds
+                );
+            }
+            // Viewability + click tracking (only when content actually rendered).
+            try {
+                snwObserveViewable(el, config, ctx);
+                snwAttachClicks(el, config, ctx);
+            } catch (e) { /* never break the widget */ }
         }).catch(function (err) {
             if (el.__snwController !== controller) { return; } // superseded
             if (typeof console !== 'undefined') {
@@ -691,6 +912,11 @@
             // A timeout (AbortError on the still-current controller) and any
             // other failure both fall through to the configured error state
             // instead of leaving the loading message hanging forever.
+            if (!el.__snwLoadSent) {
+                el.__snwLoadSent = true;
+                snwFireWidgetLoad(config, ctx, { rest_ms: 0, render_ms: 0 }, []);
+            }
+            snwFireError(config, ctx, snwErrorCode(err));
             renderError(config, el, texts);
         });
     }
@@ -737,12 +963,29 @@
         }
 
         if (show.branding && config.source_name) {
-            var branding = document.createElement('p');
-            branding.className = 'snw-branding';
-            branding.appendChild(document.createTextNode(texts.branding + ' '));
             var base = (config.source_url || '').replace(/\/+$/, '');
-            var srcLink = makeLink(trackedUrl(base || '#', config.partner, config.widget_id), config.source_name, 'snw-branding-link', 'noopener nofollow');
-            branding.appendChild(srcLink);
+            var branding = document.createElement('a');
+            branding.className = 'snw-branding';
+            branding.setAttribute('href', trackedUrl(base || '#', config.partner, config.widget_id));
+            branding.setAttribute('target', '_blank');
+            branding.setAttribute('rel', 'noopener noreferrer');
+
+            var favicon = base ? base + '/favicon.ico' : '';
+            if (favicon) {
+                var icon = document.createElement('img');
+                icon.className = 'snw-branding__icon';
+                icon.setAttribute('src', favicon);
+                icon.setAttribute('alt', '');
+                icon.setAttribute('width', '22');
+                icon.setAttribute('height', '22');
+                icon.setAttribute('loading', 'lazy');
+                icon.addEventListener('error', function () { icon.style.display = 'none'; });
+                branding.appendChild(icon);
+            }
+            branding.appendChild(document.createTextNode(texts.branding + ' '));
+            var bName = document.createElement('strong');
+            bName.textContent = config.source_name;
+            branding.appendChild(bName);
             root.appendChild(branding);
         }
 
@@ -920,7 +1163,19 @@
         formatDate: formatDate,
         stripHtml: stripHtml,
         domainMatches: domainMatches,
-        TEXTS: TEXTS
+        TEXTS: TEXTS,
+        // Telemetry (exposed for unit tests; never required for rendering).
+        telemetry: {
+            endpointFor: snwTelemetryEndpoint,
+            context: snwCtx,
+            send: snwSendTelemetry,
+            fireWidgetLoad: snwFireWidgetLoad,
+            fireError: snwFireError,
+            fireClick: snwFireClick,
+            observeViewable: snwObserveViewable,
+            attachClicks: snwAttachClicks,
+            errorCode: snwErrorCode
+        }
     };
 
     // CSS is defined before boot so style injection has content.

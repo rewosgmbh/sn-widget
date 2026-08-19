@@ -845,3 +845,42 @@ body:not(.woocommerce-page).cm-normal-container.snw-builder-page {
 .snw-request .snw-status {
     margin-top: 8px;
 }
+
+/* Compact the public creator's Design step (less vertical waste). */
+.snw-builder--public .snw-step .snw-card {
+    padding: 14px 16px;
+}
+
+.snw-builder--public .snw-step .snw-card > label {
+    margin: 9px 0 3px;
+}
+
+.snw-builder--public .snw-step .snw-card > label:first-child {
+    margin-top: 0;
+}
+
+.snw-builder--public .snw-checkboxes {
+    margin-top: 8px;
+}
+
+.snw-builder--public .snw-fieldset {
+    margin-top: 8px;
+}
+
+.snw-builder--public .snw-fieldset > summary {
+    padding: 7px 0;
+}
+
+.snw-builder--public .snw-layout-picker {
+    margin-top: 2px;
+}
+
+/* Keep the "Weitere Designoptionen" / "Weitere Farben" internals tight. */
+.snw-builder--public #snw-more-design label,
+.snw-builder--public #snw-more-colors label {
+    margin: 8px 0 3px;
+}
+
+.snw-builder--public #snw-image-options label {
+    margin: 8px 0 3px;
+}

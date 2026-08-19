@@ -195,20 +195,38 @@
 }
 
 .steigerwald-news-widget .snw-branding {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     margin: var(--snw-gap) 0 0;
     padding-top: 10px;
     border-top: 1px solid var(--snw-border);
     color: var(--snw-muted);
     font-size: .78em;
-}
-
-.steigerwald-news-widget .snw-branding-link {
-    color: var(--snw-muted);
     text-decoration: none;
+    transition: color .15s ease;
 }
 
-.steigerwald-news-widget .snw-branding-link:hover {
-    text-decoration: underline;
+.steigerwald-news-widget .snw-branding:hover {
+    color: var(--snw-link);
+}
+
+.steigerwald-news-widget .snw-branding__icon {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border-radius: 4px;
+    object-fit: contain;
+    background: rgba(127, 127, 127, .12);
+}
+
+.steigerwald-news-widget .snw-branding strong {
+    color: var(--snw-text);
+    font-weight: 700;
+}
+
+.steigerwald-news-widget .snw-branding:hover strong {
+    color: var(--snw-link);
 }
 
 .steigerwald-news-widget .snw-state {
