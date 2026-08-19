@@ -52,9 +52,20 @@
             headers: { 'X-WP-Nonce': C.restNonce || '', 'Accept': 'application/json' },
             credentials: 'same-origin'
         }).then(function (res) {
-            if (res.status === 401 || res.status === 403) { throw new Error('auth'); }
-            if (!res.ok) { throw new Error('http_' + res.status); }
+            if (res.status === 401 || res.status === 403) {
+                console.error('[SNW stats] auth rejected', res.status, url);
+                throw new Error('auth');
+            }
+            if (!res.ok) {
+                console.error('[SNW stats] request failed', res.status, url);
+                throw new Error('http_' + res.status);
+            }
             return res.json();
+        }).catch(function (e) {
+            if (e.message !== 'auth' && e.message.indexOf('http_') !== 0) {
+                console.error('[SNW stats] network error', url, e);
+            }
+            throw e;
         });
     }
 

@@ -15,6 +15,8 @@
 * **Robustes Client-Telemetry:** `sendBeacon`/`fetch`-keepalive, nie blockierend, bricht das Widget bei Ausfall nicht.
 * **Tests & CI:** PHP-Logiktests (44 Assertions), JS-Unit-Tests (Viewability/Formatierung), Playwright-Browser-Spec, GitHub Actions (Lint + Unit + Build-ZIP).
 
+**Bugfix (vor Release entdeckt):** Die Admin-REST-Routen (`stats`, `widgets`, `pages`, `articles`, `partners`, `realtime`, `aggregate`) wurden über einen generischen Dispatcher registriert, der den Callback-Namen aus einem Request-Arg las. Da dieses Arg als Bare-Skalar statt als `{ default: ... }` übergeben wurde, lieferte `WP_REST_Request::get_param()` `null` → Dispatcher antwortete mit **404 für jeden Admin-Endpunkt** → Dashboard zeigte überall „Daten konnten nicht geladen werden." Behoben durch direkte Callback-Registrierung pro Route.
+
 ## 1.5.1
 
 **Public Builder – Layout & Live-Vorschau verfeinert:**
