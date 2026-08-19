@@ -36,6 +36,7 @@ class SNW_Telemetry {
     const OPT_LAST_AGG    = 'snw_telemetry_last_aggregate';
     const OPT_LAST_AGGRUN = 'snw_telemetry_last_aggregate_run';
     const OPT_LAST_CLEAN  = 'snw_telemetry_last_cleanup';
+    const OPT_SCHEMA_VER  = 'snw_telemetry_schema';
 
     // --- Event types ----------------------------------------------------
     const EVENT_WIDGET_LOAD          = 'widget_load';
@@ -60,6 +61,12 @@ class SNW_Telemetry {
      * @return void
      */
     public static function init() {
+        // Ensure the tables exist even on a code-only update where the
+        // activation hook (which also installs) did not run.
+        if ( (int) get_option( self::OPT_SCHEMA_VER, 0 ) !== self::SCHEMA_VERSION ) {
+            self::install();
+        }
+
         add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
         add_action( 'init', array( __CLASS__, 'add_rewrite' ) );
         add_action( 'snw_telemetry_cron', array( __CLASS__, 'cron_run' ) );
@@ -214,7 +221,7 @@ class SNW_Telemetry {
             ) {$charset};
         " );
 
-        update_option( 'snw_telemetry_schema', self::SCHEMA_VERSION, false );
+        update_option( self::OPT_SCHEMA_VER, self::SCHEMA_VERSION, false );
     }
 
     // ------------------------------------------------------------------
@@ -224,7 +231,7 @@ class SNW_Telemetry {
     public static function add_rewrite() {
         add_rewrite_rule(
             '^sn-widget/telemetry/v1/(.*)$',
-            'index.php?rest_route=/snw-telemetry/v1/$1',
+            'index.php?rest_route=/snw-telemetry/v1/$matches[1]',
             'top'
         );
     }
@@ -254,6 +261,11 @@ class SNW_Telemetry {
         }
         $host = strtolower( $host );
         $host = preg_replace( '/:\d+$/', '', $host );
+        // Loopback / local hosts are accepted so telemetry works in dev and on
+        // the local test instance (no real TLD there).
+        if ( in_array( $host, array( 'localhost', '127.0.0.1', '::1', '0.0.0.0' ), true ) ) {
+            return $host;
+        }
         if ( ! preg_match( '/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i', $host ) ) {
             return '';
         }
@@ -589,9 +601,8 @@ class SNW_Telemetry {
                 '/' . $route,
                 array(
                     'methods'             => WP_REST_Server::READABLE,
-                    'callback'            => array( __CLASS__, 'rest_dispatch' ),
+                    'callback'            => array( __CLASS__, $cb ),
                     'permission_callback' => array( __CLASS__, 'admin_only' ),
-                    'args'                => array( 'route' => $route, 'cb' => $cb ),
                 )
             );
         }
@@ -604,20 +615,6 @@ class SNW_Telemetry {
      */
     public static function admin_only() {
         return current_user_can( 'manage_options' );
-    }
-
-    /**
-     * Single dispatcher for admin analytics routes (keeps registration DRY).
-     *
-     * @param WP_REST_Request $request
-     * @return WP_REST_Response|WP_Error
-     */
-    public static function rest_dispatch( $request ) {
-        $cb = $request->get_param( 'cb' );
-        if ( is_callable( array( __CLASS__, $cb ) ) ) {
-            return call_user_func( array( __CLASS__, $cb ), $request );
-        }
-        return new WP_Error( 'snw_bad_route', 'Bad route', array( 'status' => 404 ) );
     }
 
     /**
@@ -1980,7 +1977,7 @@ class SNW_Telemetry {
         $last_agg    = get_option( self::OPT_LAST_AGG, '' );
         $last_run    = (int) get_option( self::OPT_LAST_AGGRUN, 0 );
         return array(
-            'schema'              => (int) get_option( 'snw_telemetry_schema', 0 ),
+            'schema'              => (int) get_option( self::OPT_SCHEMA_VER, 0 ),
             'enabled'             => get_option( self::OPT_ENABLED, 'yes' ),
             'retention'           => (int) get_option( self::OPT_RETENTION, 90 ),
             'bot_filter'          => get_option( self::OPT_BOT_FILTER, 'yes' ),
