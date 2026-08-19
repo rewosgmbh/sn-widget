@@ -119,5 +119,26 @@ $_SERVER['REMOTE_ADDR'] = '5.6.7.8';
 $_SERVER['HTTP_X_FORWARDED_FOR'] = '1.1.1.1, 2.2.2.2';
 snw_assert('Rest client_ip honors proxy', SNW_REST::client_ip() === '1.1.1.1');
 
+// --- 1 code per e-mail (partner dedupe) ---
+function snw_simulate_accept($email, $domain) {
+    $existing = SNW_Presets::find_by_email($email);
+    if ($existing) {
+        SNW_Presets::save_meta($existing['id'], array('allowed_domain' => $domain, 'email' => $email, 'source' => 'request'));
+        return $existing['id'];
+    }
+    $p = SNW_Presets::save($email, SNW_Helpers::default_config());
+    SNW_Presets::save_meta($p['id'], array('allowed_domain' => $domain, 'email' => $email, 'source' => 'request'));
+    return $p['id'];
+}
+$code1 = snw_simulate_accept('partner@dup.com', 'a.example');
+$code2 = snw_simulate_accept('partner@dup.com', 'b.example');
+snw_assert('same e-mail reuses code', $code1 === $code2);
+$count_dup = 0;
+foreach (SNW_Presets::get_all() as $p) {
+    if (isset($p['email']) && $p['email'] === 'partner@dup.com') { $count_dup++; }
+}
+snw_assert('no duplicate preset per e-mail', $count_dup === 1);
+snw_assert('reused code keeps latest domain', SNW_Presets::get($code1)['allowed_domain'] === 'b.example');
+
 echo "\n" . ($fail === 0 ? 'ALL PASS' : $fail . ' FAILED') . " — $pass assertions passed.\n";
 exit($fail === 0 ? 0 : 1);
