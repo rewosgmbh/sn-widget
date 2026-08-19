@@ -11,9 +11,10 @@ DEST="$BUILD_ROOT/$PLUGIN_DIR"
 mkdir -p "$DEST"
 
 # Release ZIP ships runtime code only. tests/ and docs/ are development
-# artifacts and are intentionally excluded.
+# artifacts and are intentionally excluded. readme.txt is kept because
+# WordPress uses it for the plugin's "View details" metadata.
 cp -r admin includes languages public uninstall.php \
-      steigerwald-news-widget.php readme.txt README.md CHANGELOG.md "$DEST/"
+      steigerwald-news-widget.php readme.txt "$DEST/"
 
 mkdir -p "$REPO/build"
 ZIP="$REPO/build/sn-news-widget.zip"
