@@ -19,6 +19,8 @@ class SNW_Assets {
     const ADMIN_JS_HANDLE  = 'snw-admin';
     const ADMIN_CSS_HANDLE = 'snw-admin-css';
     const WIDGET_JS_HANDLE = 'snw-widget';
+    const STATS_JS_HANDLE  = 'snw-stats';
+    const STATS_CSS_HANDLE = 'snw-stats-css';
 
     /**
      * Build the localization object shared with admin.js.
@@ -57,6 +59,23 @@ class SNW_Assets {
                 'noTags'        => __( 'Keine Schlagwörter gefunden.', 'steigerwald-news-widget' ),
             ),
         );
+    }
+
+    /**
+     * Dispatch the correct asset bundle per admin screen.
+     *
+     * @param string $hook Page hook suffix for our admin menu entry.
+     * @return void
+     */
+    public static function enqueue_admin( $hook ) {
+        if ( empty( $hook ) || false === strpos( $hook, 'steigerwald-news-widget' ) ) {
+            return;
+        }
+        if ( false !== strpos( $hook, 'steigerwald-news-widget-stats' ) ) {
+            self::enqueue_stats();
+        } else {
+            self::enqueue_builder( $hook );
+        }
     }
 
     /**
@@ -106,6 +125,85 @@ class SNW_Assets {
             self::ADMIN_JS_HANDLE,
             'SNW_Admin',
             self::admin_l10n( admin_url( 'admin-ajax.php' ), wp_create_nonce( SNW_Settings::NONCE_ACTION ) )
+        );
+    }
+
+    /**
+     * Enqueue assets for the Statistik dashboard.
+     *
+     * @return void
+     */
+    public static function enqueue_stats() {
+        wp_enqueue_style(
+            self::STATS_CSS_HANDLE,
+            SNW_URL . 'admin/css/stats.css',
+            array(),
+            SNW_VERSION
+        );
+
+        wp_enqueue_script(
+            self::STATS_JS_HANDLE,
+            SNW_URL . 'admin/js/stats.js',
+            array( 'jquery' ),
+            SNW_VERSION,
+            true
+        );
+
+        wp_localize_script(
+            self::STATS_JS_HANDLE,
+            'SNW_Stats',
+            self::stats_l10n()
+        );
+    }
+
+    /**
+     * Build the localization object for the Statistik dashboard.
+     *
+     * @return array
+     */
+    public static function stats_l10n() {
+        return array(
+            'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+            'nonce'       => wp_create_nonce( SNW_Settings::NONCE_ACTION ),
+            'nonceField'  => SNW_Settings::NONCE_FIELD,
+            'restUrl'     => rest_url( 'snw-telemetry/v1' ),
+            'restNonce'   => wp_create_nonce( 'wp_rest' ),
+            'publicAlias' => home_url( '/sn-widget/telemetry/v1/event' ),
+            'endpoint'    => rest_url( 'snw-telemetry/v1/event' ),
+            'version'     => SNW_VERSION,
+            'i18n'        => array(
+                'loading'        => __( 'Wird geladen …', 'steigerwald-news-widget' ),
+                'error'          => __( 'Daten konnten nicht geladen werden.', 'steigerwald-news-widget' ),
+                'noData'         => __( 'Noch keine Daten für diesen Zeitraum.', 'steigerwald-news-widget' ),
+                'rawLoads'       => __( 'Raw Loads', 'steigerwald-news-widget' ),
+                'viewable'       => __( 'Viewable Impressions', 'steigerwald-news-widget' ),
+                'visitors'       => __( 'Unique Visitors', 'steigerwald-news-widget' ),
+                'clicks'         => __( 'Clicks', 'steigerwald-news-widget' ),
+                'uniqueClickers' => __( 'Unique Clickers', 'steigerwald-news-widget' ),
+                'ctr'            => __( 'CTR', 'steigerwald-news-widget' ),
+                'viewability'    => __( 'Viewability', 'steigerwald-news-widget' ),
+                'activeWidgets'  => __( 'Active Widgets', 'steigerwald-news-widget' ),
+                'widget'         => __( 'Widget', 'steigerwald-news-widget' ),
+                'partner'        => __( 'Partner', 'steigerwald-news-widget' ),
+                'host'           => __( 'Host', 'steigerwald-news-widget' ),
+                'page'           => __( 'Seite', 'steigerwald-news-widget' ),
+                'loads'          => __( 'Loads', 'steigerwald-news-widget' ),
+                'unique'         => __( 'Unique', 'steigerwald-news-widget' ),
+                'lastSeen'       => __( 'Last Seen', 'steigerwald-news-widget' ),
+                'status'         => __( 'Status', 'steigerwald-news-widget' ),
+                'article'        => __( 'Artikel', 'steigerwald-news-widget' ),
+                'title'          => __( 'Titel', 'steigerwald-news-widget' ),
+                'saved'          => __( 'Einstellungen gespeichert.', 'steigerwald-news-widget' ),
+                'purged'         => __( 'Alle Telemetriedaten gelöscht.', 'steigerwald-news-widget' ),
+                'aggregated'     => __( 'Aggregation ausgeführt.', 'steigerwald-news-widget' ),
+                'exportDaily'    => __( 'CSV Tagesstatistik', 'steigerwald-news-widget' ),
+                'exportWidgets'  => __( 'CSV Widget-Statistik', 'steigerwald-news-widget' ),
+                'exportArticles' => __( 'CSV Artikel-Klicks', 'steigerwald-news-widget' ),
+                'active'         => __( 'Aktiv', 'steigerwald-news-widget' ),
+                'idle'           => __( 'Wenig genutzt', 'steigerwald-news-widget' ),
+                'removed'        => __( 'Wahrscheinlich entfernt', 'steigerwald-news-widget' ),
+                'unknown'        => __( 'Unbekannt', 'steigerwald-news-widget' ),
+            ),
         );
     }
 }

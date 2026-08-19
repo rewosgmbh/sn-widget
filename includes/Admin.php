@@ -61,6 +61,15 @@ class SNW_Admin {
 
         add_submenu_page(
             'steigerwald-news-widget',
+            __( 'Statistik', 'steigerwald-news-widget' ),
+            __( 'Statistik', 'steigerwald-news-widget' ),
+            'manage_options',
+            'steigerwald-news-widget-stats',
+            array( __CLASS__, 'render_stats' )
+        );
+
+        add_submenu_page(
+            'steigerwald-news-widget',
             __( 'Partner-Anfragen', 'steigerwald-news-widget' ),
             __( 'Partneranfragen', 'steigerwald-news-widget' ),
             'manage_options',
@@ -68,7 +77,7 @@ class SNW_Admin {
             array( __CLASS__, 'render_requests' )
         );
 
-        add_action( 'admin_enqueue_scripts', array( 'SNW_Assets', 'enqueue_builder' ) );
+        add_action( 'admin_enqueue_scripts', array( 'SNW_Assets', 'enqueue_admin' ) );
     }
 
     /**
@@ -252,6 +261,92 @@ class SNW_Admin {
                         </p>
                     <?php endif; ?>
                 </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the telemetry & analytics dashboard (Statistik).
+     *
+     * Outputs the tab shell; all data is loaded asynchronously via the
+     * Telemetry REST API by admin/js/stats.js. Telemetry failures never
+     * surface as widget errors anywhere in the plugin.
+     *
+     * @return void
+     */
+    public static function render_stats() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'Keine Berechtigung.', 'steigerwald-news-widget' ) );
+        }
+        ?>
+        <div class="wrap snw-wrap snw-stats-wrap">
+            <h1><?php echo esc_html__( 'Statistik', 'steigerwald-news-widget' ); ?></h1>
+
+            <nav class="snw-stats-tabs" id="snw-stats-tabs">
+                <button type="button" class="snw-stats-tab is-active" data-tab="overview"><?php echo esc_html__( 'Übersicht', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="widgets"><?php echo esc_html__( 'Widgets', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="pages"><?php echo esc_html__( 'Seiten', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="articles"><?php echo esc_html__( 'Artikel', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="partners"><?php echo esc_html__( 'Partner', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="realtime"><?php echo esc_html__( 'Echtzeit', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="settings"><?php echo esc_html__( 'Einstellungen', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" class="snw-stats-tab" data-tab="debug"><?php echo esc_html__( 'Debug', 'steigerwald-news-widget' ); ?></button>
+            </nav>
+
+            <div class="snw-stats-filters" id="snw-stats-filters">
+                <label>
+                    <?php echo esc_html__( 'Zeitraum', 'steigerwald-news-widget' ); ?>
+                    <select id="snw-filter-range">
+                        <option value="today"><?php echo esc_html__( 'Heute', 'steigerwald-news-widget' ); ?></option>
+                        <option value="7"><?php echo esc_html__( '7 Tage', 'steigerwald-news-widget' ); ?></option>
+                        <option value="30" selected><?php echo esc_html__( '30 Tage', 'steigerwald-news-widget' ); ?></option>
+                        <option value="90"><?php echo esc_html__( '90 Tage', 'steigerwald-news-widget' ); ?></option>
+                        <option value="year"><?php echo esc_html__( 'Dieses Jahr', 'steigerwald-news-widget' ); ?></option>
+                        <option value="custom"><?php echo esc_html__( 'Benutzerdefiniert', 'steigerwald-news-widget' ); ?></option>
+                    </select>
+                </label>
+                <span class="snw-filter-custom" id="snw-filter-custom" hidden>
+                    <input type="date" id="snw-filter-start">
+                    <input type="date" id="snw-filter-end">
+                </span>
+                <label>
+                    <?php echo esc_html__( 'Widget', 'steigerwald-news-widget' ); ?>
+                    <input type="text" id="snw-filter-widget" placeholder="SNW-XXXX" class="regular-text">
+                </label>
+                <label>
+                    <?php echo esc_html__( 'Partner', 'steigerwald-news-widget' ); ?>
+                    <input type="text" id="snw-filter-partner" class="regular-text">
+                </label>
+                <label>
+                    <?php echo esc_html__( 'Host', 'steigerwald-news-widget' ); ?>
+                    <input type="text" id="snw-filter-host" class="regular-text">
+                </label>
+                <label>
+                    <?php echo esc_html__( 'Seite', 'steigerwald-news-widget' ); ?>
+                    <input type="text" id="snw-filter-page" class="regular-text">
+                </label>
+                <label>
+                    <?php echo esc_html__( 'Bots', 'steigerwald-news-widget' ); ?>
+                    <select id="snw-filter-bots">
+                        <option value="exclude" selected><?php echo esc_html__( 'Ausschließen', 'steigerwald-news-widget' ); ?></option>
+                        <option value="include"><?php echo esc_html__( 'Einschließen', 'steigerwald-news-widget' ); ?></option>
+                        <option value="only"><?php echo esc_html__( 'Nur Bots', 'steigerwald-news-widget' ); ?></option>
+                    </select>
+                </label>
+                <button type="button" id="snw-filter-apply" class="button"><?php echo esc_html__( 'Anwenden', 'steigerwald-news-widget' ); ?></button>
+                <button type="button" id="snw-export-daily" class="button"><?php echo esc_html__( 'CSV Tagesstatistik', 'steigerwald-news-widget' ); ?></button>
+            </div>
+
+            <div id="snw-stats-content" class="snw-stats-content">
+                <div class="snw-stats-panel" data-panel="overview"></div>
+                <div class="snw-stats-panel" data-panel="widgets" hidden></div>
+                <div class="snw-stats-panel" data-panel="pages" hidden></div>
+                <div class="snw-stats-panel" data-panel="articles" hidden></div>
+                <div class="snw-stats-panel" data-panel="partners" hidden></div>
+                <div class="snw-stats-panel" data-panel="realtime" hidden></div>
+                <div class="snw-stats-panel" data-panel="settings" hidden></div>
+                <div class="snw-stats-panel" data-panel="debug" hidden></div>
             </div>
         </div>
         <?php
