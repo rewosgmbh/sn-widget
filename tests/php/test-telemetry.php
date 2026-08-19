@@ -70,7 +70,9 @@ echo "Steigerwald-News Widget — Telemetry logic tests\n";
 snw_tassert('host lowercase+strip port', SNW_Telemetry::normalize_host('Example.COM:8080') === 'example.com');
 snw_tassert('host from url', SNW_Telemetry::normalize_host('https://www.ASV.de/path') === 'www.asv.de');
 snw_tassert('host rejects invalid', SNW_Telemetry::normalize_host('not a host') === '');
-snw_tassert('host rejects ip', SNW_Telemetry::normalize_host('127.0.0.1') === '');
+snw_tassert('host rejects public ip', SNW_Telemetry::normalize_host('8.8.8.8') === '');
+snw_tassert('host accepts loopback ip', SNW_Telemetry::normalize_host('127.0.0.1') === '127.0.0.1');
+snw_tassert('host accepts localhost', SNW_Telemetry::normalize_host('localhost') === 'localhost');
 
 // --- normalize_page_path ---
 snw_tassert('path strips query', SNW_Telemetry::normalize_page_path('/fussball-news/?fbclid=123&utm_source=x') === '/fussball-news/');

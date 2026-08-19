@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SNW_Telemetry {
 
-    const SCHEMA_VERSION = 1;
+    const SCHEMA_VERSION = 2;
 
     // --- Option keys ---------------------------------------------------
     const OPT_ENABLED     = 'snw_telemetry_enabled';
@@ -47,6 +47,7 @@ class SNW_Telemetry {
     const EVENT_API_SUCCESS          = 'api_success';
     const EVENT_API_ERROR            = 'api_error';
     const EVENT_CONFIG_ERROR         = 'config_error';
+    const EVENT_BUILDER_SUBMIT       = 'builder_submit';
 
     // --- Error codes ----------------------------------------------------
     const ERROR_CODES = array(
@@ -121,6 +122,40 @@ class SNW_Telemetry {
     }
 
     /**
+     * Whether a telemetry sub-table exists yet (guards optional analytics).
+     *
+     * @param string $name
+     * @return bool
+     */
+    public static function table_exists( $name ) {
+        global $wpdb;
+        $t = self::table( $name );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+        $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t ) );
+        return (bool) $found;
+    }
+
+    /**
+     * Map widget id -> last-seen datetime from the widget_pages table.
+     *
+     * @return array id => last_seen (MySQL datetime) or ''
+     */
+    public static function widget_last_seen_map() {
+        global $wpdb;
+        $out = array();
+        if ( ! self::table_exists( 'widget_pages' ) ) {
+            return $out;
+        }
+        $table = self::table( 'widget_pages' );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+        $rows = $wpdb->get_results( "SELECT widget_id, MAX(last_seen) AS last_seen FROM {$table} GROUP BY widget_id", ARRAY_A );
+        foreach ( (array) $rows as $r ) {
+            $out[ $r['widget_id'] ] = $r['last_seen'];
+        }
+        return $out;
+    }
+
+    /**
      * Create / upgrade the telemetry tables. Idempotent (dbDelta).
      *
      * @return void
@@ -172,7 +207,7 @@ class SNW_Telemetry {
                 widget_id VARCHAR(16) NOT NULL DEFAULT '',
                 partner VARCHAR(60) NOT NULL DEFAULT '',
                 host VARCHAR(255) NOT NULL DEFAULT '',
-                page_path VARCHAR(512) NOT NULL DEFAULT '/',
+                page_path VARCHAR(255) NOT NULL DEFAULT '/',
                 loads INT UNSIGNED NOT NULL DEFAULT 0,
                 unique_load_visitors INT UNSIGNED NOT NULL DEFAULT 0,
                 viewable_impressions INT UNSIGNED NOT NULL DEFAULT 0,
@@ -180,6 +215,7 @@ class SNW_Telemetry {
                 clicks INT UNSIGNED NOT NULL DEFAULT 0,
                 unique_clickers INT UNSIGNED NOT NULL DEFAULT 0,
                 errors INT UNSIGNED NOT NULL DEFAULT 0,
+                builders INT UNSIGNED NOT NULL DEFAULT 0,
                 rest_ms_sum INT UNSIGNED NOT NULL DEFAULT 0,
                 rest_ms_n INT UNSIGNED NOT NULL DEFAULT 0,
                 render_ms_sum INT UNSIGNED NOT NULL DEFAULT 0,
@@ -210,7 +246,7 @@ class SNW_Telemetry {
             CREATE TABLE {$pages} (
                 widget_id VARCHAR(16) NOT NULL DEFAULT '',
                 host VARCHAR(255) NOT NULL,
-                page_path VARCHAR(512) NOT NULL DEFAULT '/',
+                page_path VARCHAR(255) NOT NULL DEFAULT '/',
                 first_seen DATETIME NOT NULL,
                 last_seen DATETIME NOT NULL,
                 loads BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -294,8 +330,8 @@ class SNW_Telemetry {
         if ( '' === $value || '/' !== substr( $value, 0, 1 ) ) {
             $value = '/' . ltrim( $value, '/' );
         }
-        if ( strlen( $value ) > 512 ) {
-            $value = substr( $value, 0, 512 );
+        if ( strlen( $value ) > 255 ) {
+            $value = substr( $value, 0, 255 );
         }
         return $value;
     }
@@ -315,6 +351,7 @@ class SNW_Telemetry {
             self::EVENT_API_SUCCESS,
             self::EVENT_API_ERROR,
             self::EVENT_CONFIG_ERROR,
+            self::EVENT_BUILDER_SUBMIT,
         );
     }
 
@@ -737,6 +774,32 @@ class SNW_Telemetry {
     }
 
     /**
+     * Record a builder-submit (the public "Widget anfragen" click) for stats.
+     * Reuses the regular event pipeline; the widget_id is intentionally empty
+     * because no code exists yet at submission time.
+     *
+     * @param string $domain The partner's submitted domain (used as host).
+     * @return void
+     */
+    public static function record_builder_submit( $domain ) {
+        if ( 'yes' !== get_option( self::OPT_ENABLED, 'yes' ) ) {
+            return;
+        }
+        $record = self::build_record(
+            array(
+                'event'         => self::EVENT_BUILDER_SUBMIT,
+                'host'          => $domain,
+                'page_path'     => '/builder',
+                'widget_version'=> SNW_VERSION,
+            )
+        );
+        if ( is_wp_error( $record ) ) {
+            return;
+        }
+        self::insert_event( $record );
+    }
+
+    /**
      * Upsert a widget_pages row for fresh status tracking.
      *
      * @param array $record
@@ -866,6 +929,7 @@ class SNW_Telemetry {
                         SUM(event_type = %s) AS viewable,
                         SUM(event_type = %s) AS clicks,
                         SUM(event_type = %s) AS errors,
+                        SUM(event_type = %s) AS builders,
                         SUM(rest_ms) AS rest_sum,
                         SUM(rest_ms > 0) AS rest_n,
                         SUM(render_ms) AS render_sum,
@@ -877,6 +941,7 @@ class SNW_Telemetry {
                 self::EVENT_VIEWABLE_IMPRESSION,
                 self::EVENT_ARTICLE_CLICK,
                 self::EVENT_WIDGET_ERROR,
+                self::EVENT_BUILDER_SUBMIT,
                 $day
             ),
             ARRAY_A
@@ -948,8 +1013,9 @@ class SNW_Telemetry {
                     'rest_ms_n'               => (int) $r['rest_n'],
                     'render_ms_sum'           => (int) $r['render_sum'],
                     'render_ms_n'             => (int) $r['render_n'],
+                    'builders'                => (int) $r['builders'],
                 ),
-                array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d' )
+                array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d' )
             );
         }
 
@@ -1145,7 +1211,7 @@ class SNW_Telemetry {
         $empty_bucket = function () {
             return array(
                 'loads' => 0, 'unique_load' => 0, 'viewable' => 0, 'unique_view' => 0,
-                'clicks' => 0, 'unique_clickers' => 0, 'errors' => 0,
+                'clicks' => 0, 'unique_clickers' => 0, 'errors' => 0, 'builders' => 0,
                 'rest_sum' => 0, 'rest_n' => 0, 'render_sum' => 0, 'render_n' => 0,
             );
         };
@@ -1162,6 +1228,7 @@ class SNW_Telemetry {
             $b['clicks']           += (int) $r['clicks'];
             $b['unique_clickers']  += (int) $r['unique_clickers'];
             $b['errors']           += (int) $r['errors'];
+            $b['builders']         += (int) $r['builders'];
             $b['rest_sum']         += (int) $r['rest_ms_sum'];
             $b['rest_n']           += (int) $r['rest_ms_n'];
             $b['render_sum']       += (int) $r['render_ms_sum'];
@@ -1220,6 +1287,9 @@ class SNW_Telemetry {
                 $by_date[ $today ]['errors']++;
                 if ( ! isset( $by_widget[ $wkey ] ) ) { $by_widget[ $wkey ] = array( 'partner' => $r['partner'] ) + $empty_bucket(); }
                 $by_widget[ $wkey ]['errors']++;
+            } elseif ( self::EVENT_BUILDER_SUBMIT === $r['event_type'] ) {
+                if ( ! isset( $by_date[ $today ] ) ) { $by_date[ $today ] = $empty_bucket(); }
+                $by_date[ $today ]['builders']++;
             }
             // Performance (only meaningful for load/render events).
             if ( (int) $r['rest_ms'] > 0 ) {
@@ -1306,6 +1376,7 @@ class SNW_Telemetry {
         $b['clicks']           += (int) $r['clicks'];
         $b['unique_clickers']  += (int) $r['unique_clickers'];
         $b['errors']           += (int) $r['errors'];
+        $b['builders']         += (int) ( isset( $r['builders'] ) ? $r['builders'] : 0 );
         $b['rest_sum']         += (int) $r['rest_ms_sum'];
         $b['rest_n']           += (int) $r['rest_ms_n'];
         $b['render_sum']       += (int) $r['render_ms_sum'];
@@ -1326,6 +1397,7 @@ class SNW_Telemetry {
         $b['clicks']           += (int) $r['clicks'];
         $b['unique_clickers']  += (int) $r['unique_clickers'];
         $b['errors']           += (int) $r['errors'];
+        $b['builders']         += (int) ( isset( $r['builders'] ) ? $r['builders'] : 0 );
         unset( $b );
     }
 
@@ -1342,7 +1414,7 @@ class SNW_Telemetry {
     private static function sum_buckets( $buckets ) {
         $totals = array(
             'loads' => 0, 'unique_load' => 0, 'viewable' => 0, 'unique_view' => 0,
-            'clicks' => 0, 'unique_clickers' => 0, 'errors' => 0,
+            'clicks' => 0, 'unique_clickers' => 0, 'errors' => 0, 'builders' => 0,
             'rest_sum' => 0, 'rest_n' => 0, 'render_sum' => 0, 'render_n' => 0,
         );
         foreach ( $buckets as $b ) {
@@ -1390,6 +1462,7 @@ class SNW_Telemetry {
             'avg_rest_ms'           => self::avg( $cur['rest_sum'], $cur['rest_n'] ),
             'avg_render_ms'         => self::avg( $cur['render_sum'], $cur['render_n'] ),
             'errors'                => $cur['errors'],
+            'builder_uses'          => $cur['builders'],
             'prev' => array(
                 'raw_loads'            => $prev['loads'],
                 'viewable_impressions' => $prev['viewable'],
@@ -1515,6 +1588,27 @@ class SNW_Telemetry {
     }
 
     /**
+     * Map widget id -> partner {email, name} from saved presets. Presets that
+     * were created from an accepted request carry an `email` (the partner key).
+     *
+     * @return array id => {email, name}
+     */
+    public static function widget_partner_map() {
+        $map = array();
+        if ( class_exists( 'SNW_Presets' ) ) {
+            foreach ( SNW_Presets::get_all() as $p ) {
+                if ( ! empty( $p['email'] ) ) {
+                    $map[ $p['id'] ] = array(
+                        'email' => $p['email'],
+                        'name'  => isset( $p['name'] ) ? $p['name'] : '',
+                    );
+                }
+            }
+        }
+        return $map;
+    }
+
+    /**
      * Widget ranking for the range.
      *
      * @param string $start
@@ -1524,11 +1618,16 @@ class SNW_Telemetry {
      */
     public static function get_widget_ranking( $start, $end, $filters = array() ) {
         $data = self::query_range( $start, $end, $filters );
+        $pmap = self::widget_partner_map();
         $widgets = array();
         foreach ( $data['by_widget'] as $id => $b ) {
+            $email = isset( $pmap[ $id ] ) ? $pmap[ $id ]['email'] : '';
+            $pname = isset( $pmap[ $id ] ) ? $pmap[ $id ]['name'] : '';
             $widgets[] = array(
                 'widget_id'        => $id,
-                'partner'          => isset( $b['partner'] ) ? $b['partner'] : '',
+                'partner'          => $email ? $email : ( isset( $b['partner'] ) ? $b['partner'] : '' ),
+                'partner_email'    => $email,
+                'partner_name'     => $pname,
                 'loads'            => (int) $b['loads'],
                 'viewable'         => (int) $b['viewable'],
                 'unique'           => (int) $b['unique_load'],
@@ -1627,18 +1726,24 @@ class SNW_Telemetry {
      */
     public static function get_partner_analytics( $start, $end, $filters = array() ) {
         $data = self::query_range( $start, $end, $filters );
+        $pmap = self::widget_partner_map();
         $partners = array();
         foreach ( $data['by_widget'] as $id => $b ) {
-            $p = isset( $b['partner'] ) ? $b['partner'] : '';
-            if ( '' === $p ) { continue; }
-            if ( ! isset( $partners[ $p ] ) ) {
-                $partners[ $p ] = array( 'partner' => $p, 'loads' => 0, 'viewable' => 0, 'clicks' => 0, 'unique' => 0, 'widgets' => 0 );
+            if ( ! isset( $pmap[ $id ] ) ) { continue; }
+            $email = $pmap[ $id ]['email'];
+            if ( '' === $email ) { continue; }
+            if ( ! isset( $partners[ $email ] ) ) {
+                $partners[ $email ] = array(
+                    'partner' => $email,
+                    'name'    => $pmap[ $id ]['name'],
+                    'loads'   => 0, 'viewable' => 0, 'clicks' => 0, 'unique' => 0, 'widgets' => 0,
+                );
             }
-            $partners[ $p ]['loads']    += (int) $b['loads'];
-            $partners[ $p ]['viewable'] += (int) $b['viewable'];
-            $partners[ $p ]['clicks']   += (int) $b['clicks'];
-            $partners[ $p ]['unique']   += (int) $b['unique_load'];
-            $partners[ $p ]['widgets']++;
+            $partners[ $email ]['loads']    += (int) $b['loads'];
+            $partners[ $email ]['viewable'] += (int) $b['viewable'];
+            $partners[ $email ]['clicks']   += (int) $b['clicks'];
+            $partners[ $email ]['unique']   += (int) $b['unique_load'];
+            $partners[ $email ]['widgets']++;
         }
         $out = array_values( $partners );
         foreach ( $out as &$p ) {

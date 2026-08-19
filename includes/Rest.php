@@ -107,6 +107,11 @@ class SNW_REST {
 
         $id = SNW_Requests::add( $name, $email, $domain, $config );
 
+        // Count builder usage ("Widget anfragen" click) for statistics.
+        if ( class_exists( 'SNW_Telemetry' ) ) {
+            SNW_Telemetry::record_builder_submit( $domain );
+        }
+
         return new WP_REST_Response(
             array(
                 'success' => true,
