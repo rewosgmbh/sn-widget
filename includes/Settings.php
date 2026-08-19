@@ -35,6 +35,7 @@ class SNW_Settings {
         add_action( 'wp_ajax_snw_list_requests', array( __CLASS__, 'ajax_list_requests' ) );
         add_action( 'wp_ajax_snw_accept_request', array( __CLASS__, 'ajax_accept_request' ) );
         add_action( 'wp_ajax_snw_reject_request', array( __CLASS__, 'ajax_reject_request' ) );
+        add_action( 'wp_ajax_snw_list_partners', array( __CLASS__, 'ajax_list_partners' ) );
     }
 
     /**
@@ -224,19 +225,34 @@ class SNW_Settings {
         $config['source_url']  = home_url( '/' );
 
         $name   = ! empty( $request['name'] ) ? $request['name'] : $request['email'];
-        $preset = SNW_Presets::save( $name, $config );
-        if ( ! $preset ) {
-            self::respond( false, array( 'message' => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ) ), 500 );
-        }
 
-        SNW_Presets::save_meta(
-            $preset['id'],
-            array(
-                'allowed_domain' => $request['domain'],
-                'email'          => $request['email'],
-                'source'         => 'request',
-            )
-        );
+        // One code per partner (e-mail). Reuse the existing code if this e-mail
+        // already has an accepted widget instead of minting a new one.
+        $existing = SNW_Presets::find_by_email( $request['email'] );
+        if ( $existing ) {
+            $preset = $existing;
+            SNW_Presets::save_meta(
+                $preset['id'],
+                array(
+                    'allowed_domain' => $request['domain'],
+                    'email'          => $request['email'],
+                    'source'         => 'request',
+                )
+            );
+        } else {
+            $preset = SNW_Presets::save( $name, $config );
+            if ( ! $preset ) {
+                self::respond( false, array( 'message' => __( 'Speichern fehlgeschlagen.', 'steigerwald-news-widget' ) ), 500 );
+            }
+            SNW_Presets::save_meta(
+                $preset['id'],
+                array(
+                    'allowed_domain' => $request['domain'],
+                    'email'          => $request['email'],
+                    'source'         => 'request',
+                )
+            );
+        }
 
         SNW_Requests::update(
             $id,
@@ -250,11 +266,11 @@ class SNW_Settings {
         $html      = '<div class="steigerwald-news-widget" data-code="' . $preset['id'] . '"></div>' . "\n" .
             '<script src="' . esc_url( SNW_Embed_Generator::script_url() ) . '" async></script>';
 
-        $subject = __( 'Dein Steigerwald-News Widget', 'steigerwald-news-widget' );
-        $body    = __( "Hallo,\n\nhier ist der Einbettungscode für dein News-Widget:\n\nWordPress-Shortcode:\n", 'steigerwald-news-widget' ) .
-            $shortcode . "\n\n" .
+        $site_name = get_bloginfo( 'name' );
+        $subject   = sprintf( __( 'Dein %s Widget', 'steigerwald-news-widget' ), $site_name );
+        $body      = __( "Hallo,\n\nhier ist der Einbettungscode für dein News-Widget:\n\n", 'steigerwald-news-widget' ) .
             __( "HTML-Snippet (für beliebige Websites):\n", 'steigerwald-news-widget' ) .
-            $html . "\n\n" . __( 'Viele Grüße' . "\n" . 'Steigerwald-News', 'steigerwald-news-widget' );
+            $html . "\n\n" . __( 'Viele Grüße' . "\n" . 'Ottili — https://ld3.ottili.one', 'steigerwald-news-widget' );
 
         $mailto = 'mailto:' . rawurlencode( $request['email'] ) .
             '?subject=' . rawurlencode( $subject ) .
@@ -270,6 +286,48 @@ class SNW_Settings {
                 'email'     => $request['email'],
             )
         );
+    }
+
+    /**
+     * List accepted partners (presets that belong to a partner e-mail), enriched
+     * with last-seen telemetry where available.
+     *
+     * @return void
+     */
+    public static function ajax_list_partners() {
+        if ( ! self::authorized() ) {
+            self::respond( false, array( 'message' => __( 'Keine Berechtigung.', 'steigerwald-news-widget' ) ), 403 );
+        }
+
+        $last_seen_map = ( class_exists( 'SNW_Telemetry' ) )
+            ? SNW_Telemetry::widget_last_seen_map()
+            : array();
+
+        $partners = array();
+        foreach ( SNW_Presets::get_all() as $preset ) {
+            if ( empty( $preset['email'] ) ) {
+                continue;
+            }
+            $ls = isset( $last_seen_map[ $preset['id'] ] ) ? $last_seen_map[ $preset['id'] ] : '';
+            $partners[] = array(
+                'id'        => $preset['id'],
+                'name'      => isset( $preset['name'] ) ? $preset['name'] : '',
+                'email'     => $preset['email'],
+                'domain'    => isset( $preset['allowed_domain'] ) ? $preset['allowed_domain'] : '',
+                'created'   => isset( $preset['created'] ) ? $preset['created'] : '',
+                'last_seen' => $ls,
+                'status'    => ( class_exists( 'SNW_Telemetry' ) && method_exists( 'SNW_Telemetry', 'status_from_last_seen' ) )
+                    ? SNW_Telemetry::status_from_last_seen( $ls )
+                    : ( $ls ? 'active' : 'unknown' ),
+            );
+        }
+
+        // Newest first.
+        usort( $partners, function ( $a, $b ) {
+            return strtotime( $b['created'] ) - strtotime( $a['created'] );
+        } );
+
+        self::respond( true, $partners );
     }
 
     /**

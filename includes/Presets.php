@@ -53,6 +53,26 @@ class SNW_Presets {
     }
 
     /**
+     * Find an existing preset owned by a partner e-mail (case-insensitive).
+     * A partner is identified by their e-mail and may hold exactly one code.
+     *
+     * @param string $email
+     * @return array|null
+     */
+    public static function find_by_email( $email ) {
+        $email = strtolower( sanitize_email( $email ) );
+        if ( '' === $email ) {
+            return null;
+        }
+        foreach ( self::get_all() as $entry ) {
+            if ( isset( $entry['email'] ) && strtolower( (string) $entry['email'] ) === $email ) {
+                return $entry;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Save (insert or update) a preset.
      *
      * @param string $name   Preset display name.
